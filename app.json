@@ -1,29 +1,36 @@
 {
   "expo": {
-    "name": "behindthewallsapp",
-    "slug": "behindthewallsapp",
+    "name": "Behind the Walls",
+    "slug": "behind-the-walls-ministry",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
-    "userInterfaceStyle": "light",
-    "newArchEnabled": true,
+    "userInterfaceStyle": "dark",
     "splash": {
-      "image": "./assets/splash-icon.png",
+      "image": "./assets/splash.png",
       "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
+      "backgroundColor": "#1a1a2e"
     },
+    "assetBundlePatterns": [
+      "**/*"
+    ],
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.billglass.behindthewalls"
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#ffffff"
+        "backgroundColor": "#1a1a2e"
       },
-      "edgeToEdgeEnabled": true
+      "package": "com.billglass.behindthewalls"
     },
     "web": {
       "favicon": "./assets/favicon.png"
+    },
+    "extra": {
+      "ministry": "Bill Glass Behind the Walls",
+      "website": "https://www.behindthewalls.com/"
     }
   }
 }
