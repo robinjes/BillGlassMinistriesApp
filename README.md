@@ -5,16 +5,6 @@ _A ministry-focused platform for evangelism, event registration, and outreach si
 
 ---
 
-## 📱 Mobile App
-
-Download the official Behind the Walls mobile app:
-
-[![Get it on Google Play](https://play.google.com/intl/en_us/badges/images/generic/en_badge_web_generic.png)](https://play.google.com/store/apps/details?id=your.package.name)
-
-> The mobile app allows users to register for events, donate securely, and stay updated with the ministry—all from their phone.
-
----
-
 ## 🌟 Overview
 
 Behind the Walls is a ministry dedicated to **Training, Sending, and Winning One Soul at a Time**. This platform (website and app) serves as the central hub for:
