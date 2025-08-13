@@ -1,11 +1,12 @@
 // src/screens/HomeScreen.tsx
 
 import React, { useRef, useState } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, TextInput, Image } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, TextInput, Image, Animated } from 'react-native';
 import { Video, ResizeMode } from 'expo-av';
 import { styles } from '../styles/styles';
 
 export default function HomeScreen() {
+  const imageScrollY = useRef(new Animated.Value(0)).current;
   const video = useRef(null);
   const [formData, setFormData] = useState({
     firstName: '',
@@ -83,99 +84,144 @@ export default function HomeScreen() {
         </View>
       </View>
 
+      {/* Scrollable Image Quote Banner */}
+      <View style={styles.quoteBannerContainer}>
+        <Animated.ScrollView
+          horizontal={false}
+          showsVerticalScrollIndicator={false}
+          style={styles.quoteBannerScroll}
+          contentContainerStyle={styles.quoteBannerContent}
+          scrollEventThrottle={16}
+          onScroll={Animated.event(
+            [{ nativeEvent: { contentOffset: { y: imageScrollY } } }],
+            { useNativeDriver: true }
+          )}
+        >
+          <View style={styles.quoteImageScrollContainer}>
+            <Animated.Image
+              source={require('../../assets/billspeaking.jpg')}
+              style={[styles.quoteBannerImage, {
+                transform: [{
+                  translateY: imageScrollY.interpolate({
+                    inputRange: [0, 220],
+                    outputRange: [0, -220],
+                    extrapolate: 'clamp',
+                  })
+                }]
+              }]}
+              resizeMode="cover"
+            />
+            <View style={styles.quoteOverlay}>
+              <Text style={styles.quoteText}>
+                “I was thrown in kicking and screaming, but the response from the inmates was incredible.”
+              </Text>
+              <Text style={styles.quoteAuthor}>Bill Glass</Text>
+            </View>
+          </View>
+        </Animated.ScrollView>
+      </View>
+
       {/* Contact Section */}
-      <View style={styles.contactSection}>
-        <View style={styles.contactHeader}>
-          <Text style={styles.contactTitle}>Want to get involved?</Text>
-          <TouchableOpacity style={styles.eventButton}>
+      <View style={styles.contactSectionWhite}>
+        {/* Want to get involved box */}
+        <View style={styles.involvedBox}>
+          <Text style={styles.involvedTitle}>Want to get involved?</Text>
+          <TouchableOpacity style={styles.eventButtonRight}>
             <Text style={styles.eventButtonText}>Event Calendar</Text>
           </TouchableOpacity>
         </View>
 
-        <Text style={styles.formTitle}>Send us a Message</Text>
-        
-        <View style={styles.formContainer}>
-          <View style={styles.formRow}>
-            <View style={styles.formField}>
-              <TextInput
-                style={styles.input}
-                placeholder="First Name"
-                placeholderTextColor="#999"
-                value={formData.firstName}
-                onChangeText={(value) => handleInputChange('firstName', value)}
-              />
-            </View>
-            <View style={styles.formField}>
-              <TextInput
-                style={styles.input}
-                placeholder="Last Name"
-                placeholderTextColor="#999"
-                value={formData.lastName}
-                onChangeText={(value) => handleInputChange('lastName', value)}
-              />
-            </View>
-          </View>
+        {/* Send us a Message heading and bar */}
+        <View style={styles.messageHeaderContainer}>
+          <Text style={styles.messageHeaderText}>Send us a Message</Text>
+          <View style={styles.yellowBar} />
+        </View>
 
-          <View style={styles.formRow}>
-            <View style={styles.formField}>
-              <TextInput
-                style={styles.input}
-                placeholder="Phone Number"
-                placeholderTextColor="#999"
-                value={formData.phone}
-                onChangeText={(value) => handleInputChange('phone', value)}
-                keyboardType="phone-pad"
-              />
+        {/* Send us a Message form */}
+        <View style={styles.messageBox}>
+          <View style={styles.formContainer}>
+            <View style={styles.formRow}>
+              <View style={styles.formField}>
+                <TextInput
+                  style={styles.input}
+                  placeholder="First Name"
+                  placeholderTextColor="#999"
+                  value={formData.firstName}
+                  onChangeText={(value) => handleInputChange('firstName', value)}
+                />
+              </View>
+              <View style={styles.formField}>
+                <TextInput
+                  style={styles.input}
+                  placeholder="Last Name"
+                  placeholderTextColor="#999"
+                  value={formData.lastName}
+                  onChangeText={(value) => handleInputChange('lastName', value)}
+                />
+              </View>
             </View>
-            <View style={styles.formField}>
-              <TextInput
-                style={styles.input}
-                placeholder="Email"
-                placeholderTextColor="#999"
-                value={formData.email}
-                onChangeText={(value) => handleInputChange('email', value)}
-                keyboardType="email-address"
-                autoCapitalize="none"
-              />
-            </View>
-          </View>
 
-          <View style={styles.formRow}>
-            <View style={styles.formField}>
+            <View style={styles.formRow}>
+              <View style={styles.formField}>
+                <TextInput
+                  style={styles.input}
+                  placeholder="Phone Number"
+                  placeholderTextColor="#999"
+                  value={formData.phone}
+                  onChangeText={(value) => handleInputChange('phone', value)}
+                  keyboardType="phone-pad"
+                />
+              </View>
+              <View style={styles.formField}>
+                <TextInput
+                  style={styles.input}
+                  placeholder="Email"
+                  placeholderTextColor="#999"
+                  value={formData.email}
+                  onChangeText={(value) => handleInputChange('email', value)}
+                  keyboardType="email-address"
+                  autoCapitalize="none"
+                />
+              </View>
+            </View>
+
+            <View style={styles.formRow}>
+              <View style={styles.formField}>
+                <TextInput
+                  style={styles.input}
+                  placeholder="City"
+                  placeholderTextColor="#999"
+                  value={formData.city}
+                  onChangeText={(value) => handleInputChange('city', value)}
+                />
+              </View>
+              <View style={styles.formField}>
+                <TextInput
+                  style={styles.input}
+                  placeholder="State"
+                  placeholderTextColor="#999"
+                  value={formData.state}
+                  onChangeText={(value) => handleInputChange('state', value)}
+                />
+              </View>
+            </View>
+
+            <View style={styles.fullWidthField}>
               <TextInput
-                style={styles.input}
-                placeholder="City"
+                style={styles.messageInput}
+                placeholder="Message"
                 placeholderTextColor="#999"
-                value={formData.city}
-                onChangeText={(value) => handleInputChange('city', value)}
+                value={formData.message}
+                onChangeText={(value) => handleInputChange('message', value)}
+                multiline={true}
+                textAlignVertical="top"
               />
             </View>
-            <View style={styles.formField}>
-              <TextInput
-                style={styles.input}
-                placeholder="State"
-                placeholderTextColor="#999"
-                value={formData.state}
-                onChangeText={(value) => handleInputChange('state', value)}
-              />
-            </View>
-          </View>
 
-          <View style={styles.fullWidthField}>
-            <TextInput
-              style={styles.messageInput}
-              placeholder="Message"
-              placeholderTextColor="#999"
-              value={formData.message}
-              onChangeText={(value) => handleInputChange('message', value)}
-              multiline={true}
-              textAlignVertical="top"
-            />
+            <TouchableOpacity style={styles.sendButton}>
+              <Text style={styles.sendButtonText}>SEND</Text>
+            </TouchableOpacity>
           </View>
-
-          <TouchableOpacity style={styles.sendButton}>
-            <Text style={styles.sendButtonText}>SEND</Text>
-          </TouchableOpacity>
         </View>
       </View>
     </ScrollView>

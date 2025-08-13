@@ -2,7 +2,7 @@
   "expo": {
     "name": "Behind the Walls",
     "slug": "behind-the-walls-ministry",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "dark",
@@ -16,7 +16,10 @@
     ],
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.billglass.behindthewalls"
+      "bundleIdentifier": "com.billglass.behindthewalls",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
     },
     "android": {
       "adaptiveIcon": {
@@ -30,7 +33,10 @@
     },
     "extra": {
       "ministry": "Bill Glass Behind the Walls",
-      "website": "https://www.behindthewalls.com/"
+      "website": "https://www.behindthewalls.com/",
+      "eas": {
+        "projectId": "10d32677-2a0e-450e-82b5-7f135b863d2b"
+      }
     }
   }
 }
