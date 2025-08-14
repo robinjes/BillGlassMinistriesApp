@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Behind the Walls Website & Mobile App
 
 **Official repository for [BehindTheWalls.com](https://www.behindthewalls.com)**  
@@ -67,3 +68,10 @@ For media usage, partnerships, or content inquiries, please contact the ministry
 - Designed to expand the message and mission through modern technology
 
 ---
+=======
+# BillGlassMinistriesApp
+A mobile application for Bill Glass Ministries
+A Website already exists
+Just converting that website to a mobile application
+Going to use Flutter and [Backend] has to be decided
+>>>>>>> d63d881b370c7ccf537b2a886f10ee5efca8d94b
