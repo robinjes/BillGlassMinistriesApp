@@ -1,6 +1,7 @@
 // src/components/Navbar.tsx
 import React, { useState, useRef } from 'react';
 import { View, Text, ScrollView, TouchableOpacity, Image, Modal, Pressable } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { styles } from '../styles/styles';
 import { useNavigation } from '@react-navigation/native';
 
@@ -97,6 +98,24 @@ export default function Navbar({ navItems, activeTab, onTabChange }: NavbarProps
                 </TouchableOpacity>
               );
             }
+            
+            // Special handling for Home item - render icon instead of text
+            if (item === 'Home') {
+              return (
+                <TouchableOpacity
+                  key={index}
+                  style={[styles.navItem, activeTab === item && styles.activeNavItem]}
+                  onPress={() => handleNavPress(item)}
+                >
+                  <Ionicons 
+                    name="home" 
+                    size={24} 
+                    color={activeTab === item ? '#1e3a5f' : '#fff'} 
+                  />
+                </TouchableOpacity>
+              );
+            }
+            
             return (
               <TouchableOpacity
                 key={index}
