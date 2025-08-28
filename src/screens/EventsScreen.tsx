@@ -4,7 +4,7 @@ import { View, Text, StyleSheet } from 'react-native';
 export default function ChurchesScreen() {
   return (
     <View style={styles.container}>
-      <Text style={styles.text}>Churches Page (Coming Soon)</Text>
+      <Text style={styles.text}>Events Page (Coming Soon)</Text>
     </View>
   );
 }

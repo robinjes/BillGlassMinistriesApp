@@ -4,6 +4,8 @@ import { createNativeStackNavigator, NativeStackScreenProps } from '@react-navig
 
 import HomeScreen from '../screens/HomeScreen';
 import Navbar from '../components/Navbar';
+import { useRef, useState } from 'react';
+import { NavigationContainerRef } from '@react-navigation/native';
 import AboutBillGlassScreen from '../screens/aboutscreen/AboutBillGlassScreen';
 import AssistingTheChurchScreen from '../screens/aboutscreen/AssistingTheChurchScreen';
 import StatementOfFaithScreen from '../screens/aboutscreen/StatementOfFaithScreen';
@@ -49,17 +51,8 @@ interface ScreenWithNavbarProps {
   activeTab: string;
   setActiveTab: (tab: string) => void;
 }
-function ScreenWithNavbar({ children, navItems, activeTab, setActiveTab }: ScreenWithNavbarProps) {
-  return (
-    <>
-      <Navbar navItems={navItems} activeTab={activeTab} onTabChange={setActiveTab} />
-      {children}
-    </>
-  );
-}
 
 export default function AppNavigator() {
-  const [activeTab, setActiveTab] = React.useState('Home');
   const navItems = [
     'Home',
     'About',
@@ -73,54 +66,33 @@ export default function AppNavigator() {
     'Resources',
     'Contact',
   ];
+  const navigationRef = useRef<NavigationContainerRef<any>>(null);
+  const [currentRoute, setCurrentRoute] = useState('Home');
   return (
-    <NavigationContainer>
-      <Stack.Navigator initialRouteName="Home" screenOptions={{ headerShown: false }}>
-        <Stack.Screen name="Home">
-          {() => <ScreenWithNavbar navItems={navItems} activeTab={activeTab} setActiveTab={setActiveTab}><HomeScreen /></ScreenWithNavbar>}
-        </Stack.Screen>
-        <Stack.Screen name="About Bill Glass Behind the Walls">
-          {() => <ScreenWithNavbar navItems={navItems} activeTab={activeTab} setActiveTab={setActiveTab}><AboutBillGlassScreen /></ScreenWithNavbar>}
-        </Stack.Screen>
-        <Stack.Screen name="Assisting the Church">
-          {() => <ScreenWithNavbar navItems={navItems} activeTab={activeTab} setActiveTab={setActiveTab}><AssistingTheChurchScreen /></ScreenWithNavbar>}
-        </Stack.Screen>
-        <Stack.Screen name="Statement of Faith">
-          {() => <ScreenWithNavbar navItems={navItems} activeTab={activeTab} setActiveTab={setActiveTab}><StatementOfFaithScreen /></ScreenWithNavbar>}
-        </Stack.Screen>
-        <Stack.Screen name="Ministry Staff">
-          {() => <ScreenWithNavbar navItems={navItems} activeTab={activeTab} setActiveTab={setActiveTab}><MinistryStaffScreen /></ScreenWithNavbar>}
-        </Stack.Screen>
-        <Stack.Screen name="Position Opportunities">
-          {() => <ScreenWithNavbar navItems={navItems} activeTab={activeTab} setActiveTab={setActiveTab}><PositionOpportunitiesScreen /></ScreenWithNavbar>}
-        </Stack.Screen>
-        <Stack.Screen name="Join a Local Team">
-          {() => <ScreenWithNavbar navItems={navItems} activeTab={activeTab} setActiveTab={setActiveTab}><JoinLocalTeamScreen /></ScreenWithNavbar>}
-        </Stack.Screen>
-        <Stack.Screen name="Platform Guests">
-          {() => <ScreenWithNavbar navItems={navItems} activeTab={activeTab} setActiveTab={setActiveTab}><PlatformGuestsScreen /></ScreenWithNavbar>}
-        </Stack.Screen>
-        <Stack.Screen name="Frequently Asked Questions">
-          {() => <ScreenWithNavbar navItems={navItems} activeTab={activeTab} setActiveTab={setActiveTab}><FAQScreen /></ScreenWithNavbar>}
-        </Stack.Screen>
-        <Stack.Screen name="Churches">
-          {() => <ScreenWithNavbar navItems={navItems} activeTab={activeTab} setActiveTab={setActiveTab}><ChurchesScreen /></ScreenWithNavbar>}
-        </Stack.Screen>
-        <Stack.Screen name="Events">
-          {() => <ScreenWithNavbar navItems={navItems} activeTab={activeTab} setActiveTab={setActiveTab}><EventsScreen /></ScreenWithNavbar>}
-        </Stack.Screen>
-        <Stack.Screen name="Ways to Give">
-          {() => <ScreenWithNavbar navItems={navItems} activeTab={activeTab} setActiveTab={setActiveTab}><WaysToGiveScreen /></ScreenWithNavbar>}
-        </Stack.Screen>
-        <Stack.Screen name="Media">
-          {() => <ScreenWithNavbar navItems={navItems} activeTab={activeTab} setActiveTab={setActiveTab}><MediaScreen /></ScreenWithNavbar>}
-        </Stack.Screen>
-        <Stack.Screen name="Equipping Volunteers">
-          {() => <ScreenWithNavbar navItems={navItems} activeTab={activeTab} setActiveTab={setActiveTab}><EquippingVolunteersScreen /></ScreenWithNavbar>}
-        </Stack.Screen>
-        <Stack.Screen name="Store">
-          {() => <ScreenWithNavbar navItems={navItems} activeTab={activeTab} setActiveTab={setActiveTab}><StoreScreen /></ScreenWithNavbar>}
-        </Stack.Screen>
+    <NavigationContainer
+      ref={navigationRef}
+      onStateChange={() => {
+        const route = navigationRef.current?.getCurrentRoute();
+        if (route) setCurrentRoute(route.name);
+      }}
+    >
+      <Navbar navItems={navItems} currentRoute={currentRoute} />
+      <Stack.Navigator initialRouteName="Home" screenOptions={{ headerShown: false, animation: 'none' }}>
+        <Stack.Screen name="Home" component={HomeScreen} />
+        <Stack.Screen name="About Bill Glass Behind the Walls" component={AboutBillGlassScreen} />
+        <Stack.Screen name="Assisting the Church" component={AssistingTheChurchScreen} />
+        <Stack.Screen name="Statement of Faith" component={StatementOfFaithScreen} />
+        <Stack.Screen name="Ministry Staff" component={MinistryStaffScreen} />
+        <Stack.Screen name="Position Opportunities" component={PositionOpportunitiesScreen} />
+        <Stack.Screen name="Join a Local Team" component={JoinLocalTeamScreen} />
+        <Stack.Screen name="Platform Guests" component={PlatformGuestsScreen} />
+        <Stack.Screen name="Frequently Asked Questions" component={FAQScreen} />
+        <Stack.Screen name="Churches" component={ChurchesScreen} />
+        <Stack.Screen name="Events" component={EventsScreen} />
+        <Stack.Screen name="Ways to Give" component={WaysToGiveScreen} />
+        <Stack.Screen name="Media" component={MediaScreen} />
+        <Stack.Screen name="Equipping Volunteers" component={EquippingVolunteersScreen} />
+        <Stack.Screen name="Store" component={StoreScreen} />
       </Stack.Navigator>
     </NavigationContainer>
   );

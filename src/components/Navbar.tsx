@@ -3,16 +3,11 @@ import React, { useState, useRef } from 'react';
 import { View, Text, ScrollView, TouchableOpacity, Image, Modal, Pressable } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { styles } from '../styles/styles';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useRoute } from '@react-navigation/native';
 
-interface NavbarProps {
-  navItems: string[];
-  activeTab: string;
-  onTabChange: (tab: string) => void;
-}
-
-export default function Navbar({ navItems, activeTab, onTabChange }: NavbarProps) {
+export default function Navbar({ navItems, currentRoute }: { navItems: string[], currentRoute: string }) {
   const navigation = useNavigation<any>();
+  const scrollRef = useRef<ScrollView>(null);
   const [aboutDropdownVisible, setAboutDropdownVisible] = useState(false);
   const [aboutBtnLayout, setAboutBtnLayout] = useState<{x: number, y: number, width: number, height: number} | null>(null);
   const [aboutBtnPageY, setAboutBtnPageY] = useState<number | null>(null);
@@ -53,6 +48,24 @@ export default function Navbar({ navItems, activeTab, onTabChange }: NavbarProps
     navigation.navigate(section);
   };
 
+  // Determine the active tab based on the current route
+  let activeTab = navItems.find(item => {
+    if (item === 'About') {
+      // If current route is any about section, highlight About
+      return aboutSections.includes(currentRoute);
+    }
+    // Otherwise, match by name
+    if (item === 'Home' && currentRoute === 'Home') return true;
+    if (item === 'Churches' && currentRoute === 'Churches') return true;
+    if (item === 'Events' && currentRoute === 'Events') return true;
+    if (item === 'Ways to Give' && currentRoute === 'Ways to Give') return true;
+    if (item === 'Media' && currentRoute === 'Media') return true;
+    if (item === 'Equipping Volunteers' && currentRoute === 'Equipping Volunteers') return true;
+    if (item === 'Store' && currentRoute === 'Store') return true;
+    // Add more mappings if needed
+    return false;
+  }) || '';
+
   return (
     <View style={styles.topNavContainer}>
       <View style={styles.navContent}>
@@ -67,14 +80,13 @@ export default function Navbar({ navItems, activeTab, onTabChange }: NavbarProps
         </TouchableOpacity>
 
         <ScrollView 
+          ref={scrollRef}
           horizontal 
           showsHorizontalScrollIndicator={false}
           contentContainerStyle={styles.navScrollContainer}
           style={styles.navScrollView}
           bounces={false}
           decelerationRate="fast"
-          snapToInterval={120}
-          snapToAlignment="start"
         >
           {navItems.map((item, index) => {
             if (item === 'About') {
@@ -98,7 +110,6 @@ export default function Navbar({ navItems, activeTab, onTabChange }: NavbarProps
                 </TouchableOpacity>
               );
             }
-            
             // Special handling for Home item - render icon instead of text
             if (item === 'Home') {
               return (
@@ -115,7 +126,6 @@ export default function Navbar({ navItems, activeTab, onTabChange }: NavbarProps
                 </TouchableOpacity>
               );
             }
-            
             return (
               <TouchableOpacity
                 key={index}
@@ -150,10 +160,10 @@ export default function Navbar({ navItems, activeTab, onTabChange }: NavbarProps
               {aboutSections.map((section, idx) => (
                 <TouchableOpacity
                   key={section}
-                  style={[styles.dropdownMenuItem, idx === 0 && styles.dropdownMenuItemActive]}
+                  style={[styles.dropdownMenuItem, currentRoute === section && styles.dropdownMenuItemActive]}
                   onPress={() => handleAboutSectionPress(section)}
                 >
-                  <Text style={[styles.dropdownMenuText, idx === 0 && styles.dropdownMenuTextActive]}>{section}</Text>
+                  <Text style={[styles.dropdownMenuText, currentRoute === section && styles.dropdownMenuTextActive]}>{section}</Text>
                 </TouchableOpacity>
               ))}
             </View>
