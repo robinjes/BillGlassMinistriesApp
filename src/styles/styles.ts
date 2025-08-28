@@ -217,10 +217,13 @@ export const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 3,
+    borderWidth: 1,
+    borderColor: '#e0e0e0',
   },
   navLogo: {
-    width: '100%',
-    height: '100%',
+    width: 60,
+    height: 40,
+    resizeMode: 'contain',
   },
   navScrollView: {
     flex: 1,

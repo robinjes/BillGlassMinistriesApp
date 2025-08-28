@@ -59,7 +59,7 @@ export default function Navbar({ navItems, activeTab, onTabChange }: NavbarProps
         <TouchableOpacity style={styles.logoContainer} onPress={() => { setAboutDropdownVisible(false); navigation.navigate('Home'); }}>
           <View style={styles.logoBackground}>
             <Image 
-              source={require('../../assets/Billglass.jpg')} 
+              source={require('../../assets/icon.png')} 
               style={styles.navLogo}
               resizeMode="contain"
             />
