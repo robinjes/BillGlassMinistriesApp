@@ -20,6 +20,7 @@ import WaysToGiveScreen from '../screens/WaysToGiveScreen';
 import MediaScreen from '../screens/MediaScreen';
 import EquippingVolunteersScreen from '../screens/EquippingVolunteersScreen';
 import StoreScreen from '../screens/StoreScreen';
+import ProfileScreen from '../screens/ProfileScreen';
 
 
 type RootStackParamList = {
@@ -38,6 +39,7 @@ type RootStackParamList = {
   Media: undefined;
   'Equipping Volunteers': undefined;
   Store: undefined;
+  Profile: undefined;
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -54,17 +56,8 @@ interface ScreenWithNavbarProps {
 
 export default function AppNavigator() {
   const navItems = [
-    'Home',
     'About',
-    'Churches',
-    'Events',
-    'Ways to Give',
-    'Media',
-    'Equipping Volunteers',
-    'Store',
-    'Give',
-    'Resources',
-    'Contact',
+    'Profile',
   ];
   const navigationRef = useRef<NavigationContainerRef<any>>(null);
   const [currentRoute, setCurrentRoute] = useState('Home');
@@ -93,6 +86,7 @@ export default function AppNavigator() {
         <Stack.Screen name="Media" component={MediaScreen} />
         <Stack.Screen name="Equipping Volunteers" component={EquippingVolunteersScreen} />
         <Stack.Screen name="Store" component={StoreScreen} />
+        <Stack.Screen name="Profile" component={ProfileScreen} />
       </Stack.Navigator>
     </NavigationContainer>
   );

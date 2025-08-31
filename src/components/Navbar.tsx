@@ -20,6 +20,12 @@ export default function Navbar({ navItems, currentRoute }: { navItems: string[],
     'Join a Local Team',
     'Platform Guests',
     'Frequently Asked Questions',
+    'Churches',
+    'Events',
+    'Ways to Give',
+    'Media',
+    'Equipping Volunteers',
+    'Store',
   ];
 
 
@@ -27,19 +33,9 @@ export default function Navbar({ navItems, currentRoute }: { navItems: string[],
   const handleNavPress = (item: string) => {
     if (item === 'About') {
       setAboutDropdownVisible((v) => !v);
-    } else {
+    } else if (item === 'Profile') {
       setAboutDropdownVisible(false);
-      // Map navItems to screen names if needed
-      let screenName = item;
-      if (item === 'Home') screenName = 'Home';
-      else if (item === 'Churches') screenName = 'Churches';
-      else if (item === 'Events') screenName = 'Events';
-      else if (item === 'Ways to Give') screenName = 'Ways to Give';
-      else if (item === 'Media') screenName = 'Media';
-      else if (item === 'Equipping Volunteers') screenName = 'Equipping Volunteers';
-      else if (item === 'Store') screenName = 'Store';
-      // Add more mappings if needed
-      navigation.navigate(screenName);
+      navigation.navigate('Profile');
     }
   };
 
@@ -54,15 +50,7 @@ export default function Navbar({ navItems, currentRoute }: { navItems: string[],
       // If current route is any about section, highlight About
       return aboutSections.includes(currentRoute);
     }
-    // Otherwise, match by name
-    if (item === 'Home' && currentRoute === 'Home') return true;
-    if (item === 'Churches' && currentRoute === 'Churches') return true;
-    if (item === 'Events' && currentRoute === 'Events') return true;
-    if (item === 'Ways to Give' && currentRoute === 'Ways to Give') return true;
-    if (item === 'Media' && currentRoute === 'Media') return true;
-    if (item === 'Equipping Volunteers' && currentRoute === 'Equipping Volunteers') return true;
-    if (item === 'Store' && currentRoute === 'Store') return true;
-    // Add more mappings if needed
+    if (item === 'Profile' && currentRoute === 'Profile') return true;
     return false;
   }) || '';
 
@@ -89,29 +77,7 @@ export default function Navbar({ navItems, currentRoute }: { navItems: string[],
           decelerationRate="fast"
         >
           {navItems.map((item, index) => {
-            if (item === 'About') {
-              return (
-                <TouchableOpacity
-                  key={index}
-                  style={[styles.navItem, activeTab === item && styles.activeNavItem]}
-                  onPress={() => handleNavPress(item)}
-                  onLayout={e => {
-                    setAboutBtnLayout(e.nativeEvent.layout);
-                    // Get absolute Y position for dropdown
-                    e.target.measure((ox, oy, width, height, px, py) => {
-                      setAboutBtnPageY(py + height);
-                    });
-                  }}
-                >
-                  <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                    <Text style={[styles.navText, activeTab === item && styles.activeNavText]}>{item}</Text>
-                    <Text style={{ marginLeft: 4, fontSize: 14, color: activeTab === item ? '#1e3a5f' : '#fff' }}>▼</Text>
-                  </View>
-                </TouchableOpacity>
-              );
-            }
-            // Special handling for Home item - render icon instead of text
-            if (item === 'Home') {
+            if (item === 'Profile') {
               return (
                 <TouchableOpacity
                   key={index}
@@ -119,20 +85,31 @@ export default function Navbar({ navItems, currentRoute }: { navItems: string[],
                   onPress={() => handleNavPress(item)}
                 >
                   <Ionicons 
-                    name="home" 
+                    name="person" 
                     size={24} 
                     color={activeTab === item ? '#1e3a5f' : '#fff'} 
                   />
                 </TouchableOpacity>
               );
             }
+            // About button (default case)
             return (
               <TouchableOpacity
                 key={index}
                 style={[styles.navItem, activeTab === item && styles.activeNavItem]}
                 onPress={() => handleNavPress(item)}
+                onLayout={e => {
+                  setAboutBtnLayout(e.nativeEvent.layout);
+                  // Get absolute Y position for dropdown
+                  e.target.measure((ox, oy, width, height, px, py) => {
+                    setAboutBtnPageY(py + height);
+                  });
+                }}
               >
-                <Text style={[styles.navText, activeTab === item && styles.activeNavText]}>{item}</Text>
+                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                  <Text style={[styles.navText, activeTab === item && styles.activeNavText]}>{item}</Text>
+                  <Text style={{ marginLeft: 4, fontSize: 14, color: activeTab === item ? '#1e3a5f' : '#fff' }}>▼</Text>
+                </View>
               </TouchableOpacity>
             );
           })}
