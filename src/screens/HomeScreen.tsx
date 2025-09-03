@@ -4,6 +4,7 @@ import React, { useRef, useState } from 'react';
 import { View, Text, ScrollView, TouchableOpacity, TextInput, Image, Animated } from 'react-native';
 import { Video, ResizeMode } from 'expo-av';
 import { styles } from '../styles/styles';
+import HomeQuickLinks from '../components/HomeQuickLinks';
 
 export default function HomeScreen() {
   const imageScrollY = useRef(new Animated.Value(0)).current;
@@ -47,6 +48,9 @@ export default function HomeScreen() {
           </View>
         </View>
       </View>
+
+      {/* Quick Links Overlay Section */}
+      <HomeQuickLinks />
 
       {/* Main Content Container */}
       <View style={styles.mainContentContainer}>

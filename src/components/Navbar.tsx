@@ -20,12 +20,6 @@ export default function Navbar({ navItems, currentRoute }: { navItems: string[],
     'Join a Local Team',
     'Platform Guests',
     'Frequently Asked Questions',
-    'Churches',
-    'Events',
-    'Ways to Give',
-    'Media',
-    'Equipping Volunteers',
-    'Store',
   ];
 
 
@@ -50,8 +44,8 @@ export default function Navbar({ navItems, currentRoute }: { navItems: string[],
       // If current route is any about section, highlight About
       return aboutSections.includes(currentRoute);
     }
-    if (item === 'Profile' && currentRoute === 'Profile') return true;
-    return false;
+    // Highlight if the nav item matches the current route
+    return item === currentRoute;
   }) || '';
 
   return (
@@ -92,24 +86,38 @@ export default function Navbar({ navItems, currentRoute }: { navItems: string[],
                 </TouchableOpacity>
               );
             }
-            // About button (default case)
+            if (item === 'About') {
+              return (
+                <TouchableOpacity
+                  key={index}
+                  style={[styles.navItem, activeTab === item && styles.activeNavItem]}
+                  onPress={() => handleNavPress(item)}
+                  onLayout={e => {
+                    setAboutBtnLayout(e.nativeEvent.layout);
+                    // Get absolute Y position for dropdown
+                    e.target.measure((ox, oy, width, height, px, py) => {
+                      setAboutBtnPageY(py + height);
+                    });
+                  }}
+                >
+                  <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                    <Text style={[styles.navText, activeTab === item && styles.activeNavText]}>{item}</Text>
+                    <Text style={{ marginLeft: 4, fontSize: 14, color: activeTab === item ? '#1e3a5f' : '#fff' }}>▼</Text>
+                  </View>
+                </TouchableOpacity>
+              );
+            }
+            // All other nav items are regular buttons
             return (
               <TouchableOpacity
                 key={index}
                 style={[styles.navItem, activeTab === item && styles.activeNavItem]}
-                onPress={() => handleNavPress(item)}
-                onLayout={e => {
-                  setAboutBtnLayout(e.nativeEvent.layout);
-                  // Get absolute Y position for dropdown
-                  e.target.measure((ox, oy, width, height, px, py) => {
-                    setAboutBtnPageY(py + height);
-                  });
+                onPress={() => {
+                  setAboutDropdownVisible(false);
+                  navigation.navigate(item);
                 }}
               >
-                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                  <Text style={[styles.navText, activeTab === item && styles.activeNavText]}>{item}</Text>
-                  <Text style={{ marginLeft: 4, fontSize: 14, color: activeTab === item ? '#1e3a5f' : '#fff' }}>▼</Text>
-                </View>
+                <Text style={[styles.navText, activeTab === item && styles.activeNavText]}>{item}</Text>
               </TouchableOpacity>
             );
           })}
@@ -124,27 +132,25 @@ export default function Navbar({ navItems, currentRoute }: { navItems: string[],
           <Pressable style={{ flex: 1 }} onPress={() => setAboutDropdownVisible(false)}>
             <View style={{ flex: 1 }} />
           </Pressable>
-          {aboutBtnLayout && aboutBtnPageY !== null && (
-            <View style={[
-              styles.dropdownMenuContainer,
-              {
-                position: 'absolute',
-                top: aboutBtnPageY,
-                left: aboutBtnLayout.x,
-                minWidth: aboutBtnLayout.width + 40,
-              },
-            ]}>
-              {aboutSections.map((section, idx) => (
-                <TouchableOpacity
-                  key={section}
-                  style={[styles.dropdownMenuItem, currentRoute === section && styles.dropdownMenuItemActive]}
-                  onPress={() => handleAboutSectionPress(section)}
-                >
-                  <Text style={[styles.dropdownMenuText, currentRoute === section && styles.dropdownMenuTextActive]}>{section}</Text>
-                </TouchableOpacity>
-              ))}
-            </View>
-          )}
+          <View style={[
+            styles.dropdownMenuContainer,
+            {
+              position: 'absolute',
+              top: aboutBtnPageY !== null ? aboutBtnPageY : 100,
+              left: aboutBtnLayout ? aboutBtnLayout.x : 20,
+              minWidth: aboutBtnLayout ? aboutBtnLayout.width + 40 : 180,
+            },
+          ]}>
+            {aboutSections.map((section, idx) => (
+              <TouchableOpacity
+                key={section}
+                style={[styles.dropdownMenuItem, currentRoute === section && styles.dropdownMenuItemActive]}
+                onPress={() => handleAboutSectionPress(section)}
+              >
+                <Text style={[styles.dropdownMenuText, currentRoute === section && styles.dropdownMenuTextActive]}>{section}</Text>
+              </TouchableOpacity>
+            ))}
+          </View>
         </Modal>
       </View>
     </View>

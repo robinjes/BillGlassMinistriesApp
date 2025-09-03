@@ -1,15 +1,21 @@
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { StyleSheet, View } from 'react-native';
+import { WebView } from 'react-native-webview';
 
-export default function ChurchesScreen() {
+export default function StoreScreen() {
   return (
     <View style={styles.container}>
-      <Text style={styles.text}>Churches Page (Coming Soon)</Text>
+      <WebView
+        source={{ uri: 'https://www.shopbillglass.com/' }}
+        style={{ flex: 1 }}
+        startInLoadingState={true}
+        javaScriptEnabled={true}
+        domStorageEnabled={true}
+      />
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, justifyContent: 'center', alignItems: 'center' },
-  text: { fontSize: 20 }
+  container: { flex: 1 }
 });

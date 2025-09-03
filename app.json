@@ -2,7 +2,7 @@
   "expo": {
     "name": "Behind the Walls",
     "slug": "behind-the-walls-ministry",
-    "version": "1.0.1",
+    "version": "1.0.2",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "dark",

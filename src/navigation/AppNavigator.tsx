@@ -57,6 +57,12 @@ interface ScreenWithNavbarProps {
 export default function AppNavigator() {
   const navItems = [
     'About',
+    'Churches',
+    'Events',
+    'Ways to Give',
+    'Media',
+    'Equipping Volunteers',
+    'Store',
     'Profile',
   ];
   const navigationRef = useRef<NavigationContainerRef<any>>(null);
