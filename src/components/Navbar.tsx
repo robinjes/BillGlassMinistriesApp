@@ -9,8 +9,11 @@ export default function Navbar({ navItems, currentRoute }: { navItems: string[],
   const navigation = useNavigation<any>();
   const scrollRef = useRef<ScrollView>(null);
   const [aboutDropdownVisible, setAboutDropdownVisible] = useState(false);
+  const [eventsDropdownVisible, setEventsDropdownVisible] = useState(false);
   const [aboutBtnLayout, setAboutBtnLayout] = useState<{x: number, y: number, width: number, height: number} | null>(null);
+  const [eventsBtnLayout, setEventsBtnLayout] = useState<{x: number, y: number, width: number, height: number} | null>(null);
   const [aboutBtnPageY, setAboutBtnPageY] = useState<number | null>(null);
+  const [eventsBtnPageY, setEventsBtnPageY] = useState<number | null>(null);
   const aboutSections = [
     'About Bill Glass Behind the Walls',
     'Assisting the Church',
@@ -21,20 +24,40 @@ export default function Navbar({ navItems, currentRoute }: { navItems: string[],
     'Platform Guests',
     'Frequently Asked Questions',
   ];
+  const eventsSections = [
+    'Evangelism Events',
+    'Africa Evangelism Events',
+    'How to Register for an Event',
+    'What to Expect at Our Events',
+    'Who Can Serve on a Bill Glass Behind the Walls Event?',
+    'Join a Local Team',
+  ];
 
 
   // Unified navigation for all tabs
   const handleNavPress = (item: string) => {
     if (item === 'About') {
       setAboutDropdownVisible((v) => !v);
+      setEventsDropdownVisible(false);
+    } else if (item === 'Events') {
+      setEventsDropdownVisible((v) => !v);
+      setAboutDropdownVisible(false);
     } else if (item === 'Profile') {
       setAboutDropdownVisible(false);
+      setEventsDropdownVisible(false);
       navigation.navigate('Profile');
     }
   };
 
   const handleAboutSectionPress = (section: string) => {
     setAboutDropdownVisible(false);
+    setEventsDropdownVisible(false);
+    navigation.navigate(section);
+  };
+
+  const handleEventsSectionPress = (section: string) => {
+    setAboutDropdownVisible(false);
+    setEventsDropdownVisible(false);
     navigation.navigate(section);
   };
 
@@ -44,6 +67,10 @@ export default function Navbar({ navItems, currentRoute }: { navItems: string[],
       // If current route is any about section, highlight About
       return aboutSections.includes(currentRoute);
     }
+    if (item === 'Events') {
+      // If current route is any events section, highlight Events
+      return eventsSections.includes(currentRoute);
+    }
     // Highlight if the nav item matches the current route
     return item === currentRoute;
   }) || '';
@@ -51,7 +78,7 @@ export default function Navbar({ navItems, currentRoute }: { navItems: string[],
   return (
     <View style={styles.topNavContainer}>
       <View style={styles.navContent}>
-        <TouchableOpacity style={styles.logoContainer} onPress={() => { setAboutDropdownVisible(false); navigation.navigate('Home'); }}>
+        <TouchableOpacity style={styles.logoContainer} onPress={() => { setAboutDropdownVisible(false); setEventsDropdownVisible(false); navigation.navigate('Home'); }}>
           <View style={styles.logoBackground}>
             <Image 
               source={require('../../assets/icon.png')} 
@@ -107,6 +134,27 @@ export default function Navbar({ navItems, currentRoute }: { navItems: string[],
                 </TouchableOpacity>
               );
             }
+            if (item === 'Events') {
+              return (
+                <TouchableOpacity
+                  key={index}
+                  style={[styles.navItem, activeTab === item && styles.activeNavItem]}
+                  onPress={() => handleNavPress(item)}
+                  onLayout={e => {
+                    setEventsBtnLayout(e.nativeEvent.layout);
+                    // Get absolute Y position for dropdown
+                    e.target.measure((ox, oy, width, height, px, py) => {
+                      setEventsBtnPageY(py + height);
+                    });
+                  }}
+                >
+                  <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                    <Text style={[styles.navText, activeTab === item && styles.activeNavText]}>{item}</Text>
+                    <Text style={{ marginLeft: 4, fontSize: 14, color: activeTab === item ? '#1e3a5f' : '#fff' }}>▼</Text>
+                  </View>
+                </TouchableOpacity>
+              );
+            }
             // All other nav items are regular buttons
             return (
               <TouchableOpacity
@@ -114,6 +162,7 @@ export default function Navbar({ navItems, currentRoute }: { navItems: string[],
                 style={[styles.navItem, activeTab === item && styles.activeNavItem]}
                 onPress={() => {
                   setAboutDropdownVisible(false);
+                  setEventsDropdownVisible(false);
                   navigation.navigate(item);
                 }}
               >
@@ -146,6 +195,36 @@ export default function Navbar({ navItems, currentRoute }: { navItems: string[],
                 key={section}
                 style={[styles.dropdownMenuItem, currentRoute === section && styles.dropdownMenuItemActive]}
                 onPress={() => handleAboutSectionPress(section)}
+              >
+                <Text style={[styles.dropdownMenuText, currentRoute === section && styles.dropdownMenuTextActive]}>{section}</Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+        </Modal>
+        {/* Events Dropdown */}
+        <Modal
+          visible={eventsDropdownVisible}
+          transparent
+          animationType="fade"
+          onRequestClose={() => setEventsDropdownVisible(false)}
+        >
+          <Pressable style={{ flex: 1 }} onPress={() => setEventsDropdownVisible(false)}>
+            <View style={{ flex: 1 }} />
+          </Pressable>
+          <View style={[
+            styles.dropdownMenuContainer,
+            {
+              position: 'absolute',
+              top: eventsBtnPageY !== null ? eventsBtnPageY : 100,
+              left: eventsBtnLayout ? eventsBtnLayout.x : 20,
+              minWidth: eventsBtnLayout ? eventsBtnLayout.width + 40 : 180,
+            },
+          ]}>
+            {eventsSections.map((section, idx) => (
+              <TouchableOpacity
+                key={section}
+                style={[styles.dropdownMenuItem, currentRoute === section && styles.dropdownMenuItemActive]}
+                onPress={() => handleEventsSectionPress(section)}
               >
                 <Text style={[styles.dropdownMenuText, currentRoute === section && styles.dropdownMenuTextActive]}>{section}</Text>
               </TouchableOpacity>

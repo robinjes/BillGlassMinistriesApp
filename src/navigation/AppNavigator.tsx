@@ -21,6 +21,11 @@ import MediaScreen from '../screens/MediaScreen';
 import EquippingVolunteersScreen from '../screens/EquippingVolunteersScreen';
 import StoreScreen from '../screens/StoreScreen';
 import ProfileScreen from '../screens/ProfileScreen';
+import EvangelismEventsScreen from '../screens/eventsscreen/EvangelismEventsScreen';
+import AfricaEvangelismEventsScreen from '../screens/eventsscreen/AfricaEvangelismEventsScreen';
+import HowToRegisterScreen from '../screens/eventsscreen/HowToRegisterScreen';
+import WhatToExpectScreen from '../screens/eventsscreen/WhatToExpectScreen';
+import WhoCanServeScreen from '../screens/eventsscreen/WhoCanServeScreen';
 
 
 type RootStackParamList = {
@@ -35,6 +40,11 @@ type RootStackParamList = {
   'Frequently Asked Questions': undefined;
   Churches: undefined;
   Events: undefined;
+  'Evangelism Events': undefined;
+  'Africa Evangelism Events': undefined;
+  'How to Register for an Event': undefined;
+  'What to Expect at Our Events': undefined;
+  'Who Can Serve on a Bill Glass Behind the Walls Event?': undefined;
   'Ways to Give': undefined;
   Media: undefined;
   'Equipping Volunteers': undefined;
@@ -96,6 +106,11 @@ export default function AppNavigator() {
         <Stack.Screen name="Frequently Asked Questions" component={FAQScreen} />
         <Stack.Screen name="Churches" component={ChurchesScreen} />
         <Stack.Screen name="Events" component={EventsScreen} />
+        <Stack.Screen name="Evangelism Events" component={EvangelismEventsScreen} />
+        <Stack.Screen name="Africa Evangelism Events" component={AfricaEvangelismEventsScreen} />
+        <Stack.Screen name="How to Register for an Event" component={HowToRegisterScreen} />
+        <Stack.Screen name="What to Expect at Our Events" component={WhatToExpectScreen} />
+        <Stack.Screen name="Who Can Serve on a Bill Glass Behind the Walls Event?" component={WhoCanServeScreen} />
         <Stack.Screen name="Ways to Give" component={WaysToGiveScreen} />
         <Stack.Screen name="Media" component={MediaScreen} />
         <Stack.Screen name="Equipping Volunteers" component={EquippingVolunteersScreen} />

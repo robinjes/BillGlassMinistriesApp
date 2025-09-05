@@ -1,15 +1,13 @@
-import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import React, { useEffect } from 'react';
+import { useNavigation } from '@react-navigation/native';
 
-export default function ChurchesScreen() {
-  return (
-    <View style={styles.container}>
-      <Text style={styles.text}>Events Page (Coming Soon)</Text>
-    </View>
-  );
+export default function EventsScreen() {
+  const navigation = useNavigation<any>();
+
+  useEffect(() => {
+    // Redirect to Evangelism Events as the main events page
+    navigation.navigate('Evangelism Events');
+  }, [navigation]);
+
+  return null;
 }
-
-const styles = StyleSheet.create({
-  container: { flex: 1, justifyContent: 'center', alignItems: 'center' },
-  text: { fontSize: 20 }
-});

@@ -20,7 +20,7 @@ kill $METRO_PID
 # Clean and reinstall pods if needed
 echo "Checking CocoaPods..."
 cd ios
-pod install --repo-update
+pod install
 cd ..
 
 echo "✅ Cleanup complete! Now running the app..."
