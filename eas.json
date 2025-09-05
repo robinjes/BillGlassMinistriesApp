@@ -1,5 +1,12 @@
 {
   "build": {
+    "development": {
+      "ios": {
+        "distribution": "internal",
+        "developmentClient": true,
+        "simulator": false
+      }
+    },
     "production": {
       "ios": {
         "distribution": "store"
