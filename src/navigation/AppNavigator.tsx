@@ -40,7 +40,14 @@ type RootStackParamList = {
   'Equipping Volunteers': undefined;
   Store: undefined;
   Profile: undefined;
+  'Open Positions Form': undefined;
+  PlatformGuestForm: undefined;
+  JoinLocalTeamForm: undefined;
 };
+export type { RootStackParamList };
+import OpenPositionsFormScreen from '../screens/aboutscreen/OpenPositionsFormScreen';
+import PlatformGuestFormScreen from '../screens/aboutscreen/PlatformGuestFormScreen';
+import JoinLocalTeamFormScreen from '../screens/aboutscreen/JoinLocalTeamFormScreen';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
@@ -83,6 +90,7 @@ export default function AppNavigator() {
         <Stack.Screen name="Statement of Faith" component={StatementOfFaithScreen} />
         <Stack.Screen name="Ministry Staff" component={MinistryStaffScreen} />
         <Stack.Screen name="Position Opportunities" component={PositionOpportunitiesScreen} />
+        <Stack.Screen name="Open Positions Form" component={OpenPositionsFormScreen} />
         <Stack.Screen name="Join a Local Team" component={JoinLocalTeamScreen} />
         <Stack.Screen name="Platform Guests" component={PlatformGuestsScreen} />
         <Stack.Screen name="Frequently Asked Questions" component={FAQScreen} />
@@ -93,6 +101,8 @@ export default function AppNavigator() {
         <Stack.Screen name="Equipping Volunteers" component={EquippingVolunteersScreen} />
         <Stack.Screen name="Store" component={StoreScreen} />
         <Stack.Screen name="Profile" component={ProfileScreen} />
+  <Stack.Screen name="PlatformGuestForm" component={PlatformGuestFormScreen} />
+  <Stack.Screen name="JoinLocalTeamForm" component={JoinLocalTeamFormScreen} />
       </Stack.Navigator>
     </NavigationContainer>
   );
