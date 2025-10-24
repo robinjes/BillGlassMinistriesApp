@@ -5,6 +5,7 @@ import { useNavigation } from '@react-navigation/native';
 
 export default function HomeQuickLinks() {
   const navigation = useNavigation<any>();
+  
   return (
     <View style={styles.overlayBox}>
       <TouchableOpacity style={styles.linkItem} onPress={() => navigation.navigate('Events')}>

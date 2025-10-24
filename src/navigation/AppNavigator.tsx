@@ -46,6 +46,16 @@ type RootStackParamList = {
   'What to Expect at Our Events': undefined;
   'Who Can Serve on a Bill Glass Behind the Walls Event?': undefined;
   'Ways to Give': undefined;
+  'Ways to Give Now': undefined;
+  'Ways to Give Later': undefined;
+  'First Team': undefined;
+  '$75 to Life': undefined;
+  'Financial Integrity': undefined;
+  'ECFA Accredited': undefined;
+  '4 Star Charity Navigator': undefined;
+  'Financial Documents': undefined;
+  'Donor Privacy Policy': undefined;
+  'Donor Privacy': undefined;
   Media: undefined;
   'Equipping Volunteers': undefined;
   Store: undefined;
@@ -53,11 +63,30 @@ type RootStackParamList = {
   'Open Positions Form': undefined;
   PlatformGuestForm: undefined;
   JoinLocalTeamForm: undefined;
+  'Greatest Need Support': undefined;
+  'Support a Specific Event': undefined;
+  'Other Ways to Give': undefined;
+  'Memorial Gift': undefined;
+  'Ways to Give Contact Form': undefined;
 };
 export type { RootStackParamList };
 import OpenPositionsFormScreen from '../screens/aboutscreen/OpenPositionsFormScreen';
 import PlatformGuestFormScreen from '../screens/aboutscreen/PlatformGuestFormScreen';
 import JoinLocalTeamFormScreen from '../screens/aboutscreen/JoinLocalTeamFormScreen';
+import WaysToGiveLaterScreen from '../screens/waystogivescreen/WaysToGiveLaterScreen';
+import FirstTeamScreen from '../screens/waystogivescreen/waystogivenowscreen/FirstTeamScreen';
+import SeventyFiveToLifeScreen from '../screens/waystogivescreen/SeventyFiveToLifeScreen';
+import FinancialIntegrityScreen from '../screens/waystogivescreen/financialintegrity/FinancialIntegrityScreen';
+import ECFAAccreditedScreen from '../screens/waystogivescreen/financialintegrity/ECFAAccreditedScreen';
+import FourStarCharityNavigatorScreen from '../screens/waystogivescreen/financialintegrity/FourStarCharityNavigatorScreen';
+import FinancialDocumentsScreen from '../screens/waystogivescreen/financialintegrity/FinancialDocumentsScreen';
+import DonorPrivacyPolicyScreen from '../screens/waystogivescreen/financialintegrity/DonorPrivacyPolicyScreen';
+import DonorPrivacyScreen from '../screens/waystogivescreen/DonorPrivacyScreen';
+import GreatestNeedSupportScreen from '../screens/waystogivescreen/waystogivenowscreen/GreatestNeedSupportScreen';
+import SupportSpecificEventScreen from '../screens/waystogivescreen/waystogivenowscreen/SupportSpecificEventScreen';
+import OtherWaysToGiveScreen from '../screens/waystogivescreen/waystogivenowscreen/OtherWaysToGiveScreen';
+import MemorialGiftScreen from '../screens/waystogivescreen/waystogivenowscreen/MemorialGiftScreen';
+import WaysToGiveContactFormScreen from '../screens/waystogivescreen/WaysToGiveContactFormScreen';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
@@ -112,6 +141,21 @@ export default function AppNavigator() {
         <Stack.Screen name="What to Expect at Our Events" component={WhatToExpectScreen} />
         <Stack.Screen name="Who Can Serve on a Bill Glass Behind the Walls Event?" component={WhoCanServeScreen} />
         <Stack.Screen name="Ways to Give" component={WaysToGiveScreen} />
+        <Stack.Screen name="Ways to Give Now" component={WaysToGiveScreen} />
+        <Stack.Screen name="Ways to Give Later" component={WaysToGiveLaterScreen} />
+        <Stack.Screen name="First Team" component={FirstTeamScreen} />
+        <Stack.Screen name="$75 to Life" component={SeventyFiveToLifeScreen} />
+        <Stack.Screen name="Financial Integrity" component={FinancialIntegrityScreen} />
+        <Stack.Screen name="ECFA Accredited" component={ECFAAccreditedScreen} />
+        <Stack.Screen name="4 Star Charity Navigator" component={FourStarCharityNavigatorScreen} />
+        <Stack.Screen name="Financial Documents" component={FinancialDocumentsScreen} />
+        <Stack.Screen name="Donor Privacy Policy" component={DonorPrivacyPolicyScreen} />
+        <Stack.Screen name="Donor Privacy" component={DonorPrivacyScreen} />
+        <Stack.Screen name="Greatest Need Support" component={GreatestNeedSupportScreen} />
+        <Stack.Screen name="Support a Specific Event" component={SupportSpecificEventScreen} />
+        <Stack.Screen name="Other Ways to Give" component={OtherWaysToGiveScreen} />
+        <Stack.Screen name="Memorial Gift" component={MemorialGiftScreen} />
+        <Stack.Screen name="Ways to Give Contact Form" component={WaysToGiveContactFormScreen} />
         <Stack.Screen name="Media" component={MediaScreen} />
         <Stack.Screen name="Equipping Volunteers" component={EquippingVolunteersScreen} />
         <Stack.Screen name="Store" component={StoreScreen} />
