@@ -17,7 +17,10 @@ import FAQScreen from '../screens/aboutscreen/FAQScreen';
 import ChurchesScreen from '../screens/ChurchesScreen';
 import EventsScreen from '../screens/EventsScreen';
 import WaysToGiveScreen from '../screens/WaysToGiveScreen';
-import MediaScreen from '../screens/MediaScreen';
+import SocialMediaScreen from '../screens/media/SocialMediaScreen';
+import PodcastScreen from '../screens/media/PodcastScreen';
+import WhoIsBillGlassCardsScreen from '../screens/media/WhoIsBillGlassCardsScreen';
+import PromoVideoScreen from '../screens/media/PromoVideoScreen';
 import EquippingVolunteersScreen from '../screens/EquippingVolunteersScreen';
 import StoreScreen from '../screens/StoreScreen';
 import ProfileScreen from '../screens/ProfileScreen';
@@ -56,7 +59,10 @@ type RootStackParamList = {
   'Financial Documents': undefined;
   'Donor Privacy Policy': undefined;
   'Donor Privacy': undefined;
-  Media: undefined;
+  'Social Media': undefined;
+  'Podcast': undefined;
+  'Who is Bill Glass? Cards': undefined;
+  'Promo Video': undefined;
   'Equipping Volunteers': undefined;
   Store: undefined;
   Profile: undefined;
@@ -156,7 +162,10 @@ export default function AppNavigator() {
         <Stack.Screen name="Other Ways to Give" component={OtherWaysToGiveScreen} />
         <Stack.Screen name="Memorial Gift" component={MemorialGiftScreen} />
         <Stack.Screen name="Ways to Give Contact Form" component={WaysToGiveContactFormScreen} />
-        <Stack.Screen name="Media" component={MediaScreen} />
+        <Stack.Screen name="Social Media" component={SocialMediaScreen} />
+        <Stack.Screen name="Podcast" component={PodcastScreen} />
+        <Stack.Screen name="Who is Bill Glass? Cards" component={WhoIsBillGlassCardsScreen} />
+        <Stack.Screen name="Promo Video" component={PromoVideoScreen} />
         <Stack.Screen name="Equipping Volunteers" component={EquippingVolunteersScreen} />
         <Stack.Screen name="Store" component={StoreScreen} />
         <Stack.Screen name="Profile" component={ProfileScreen} />

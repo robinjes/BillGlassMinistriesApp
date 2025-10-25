@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Modal, Pressable } from 'react-native';
-import { styles } from '../../styles/styles';
+import { styles as mainStyles } from '../../styles/styles';
 
 interface Event {
   id: string;
@@ -445,6 +445,9 @@ export default function EvangelismEventsScreen() {
     }
   };
 
+  // Combine main styles with event-specific styles
+  const styles = { ...mainStyles, ...eventStyles };
+
   return (
     <ScrollView style={styles.container}>
       <View style={styles.mainContentContainer}>
@@ -849,6 +852,3 @@ const eventStyles = StyleSheet.create({
     minWidth: '45%',
   },
 });
-
-// Merge the event styles with the main styles
-Object.assign(styles, eventStyles);

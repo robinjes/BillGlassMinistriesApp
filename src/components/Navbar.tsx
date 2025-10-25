@@ -12,15 +12,19 @@ export default function Navbar({ navItems, currentRoute }: { navItems: string[],
   const [eventsDropdownVisible, setEventsDropdownVisible] = useState(false);
   const [waysToGiveDropdownVisible, setWaysToGiveDropdownVisible] = useState(false);
   const [waysToGiveNowDropdownVisible, setWaysToGiveNowDropdownVisible] = useState(false);
+  const [mediaDropdownVisible, setMediaDropdownVisible] = useState(false);
   const [aboutBtnLayout, setAboutBtnLayout] = useState<{x: number, y: number, width: number, height: number} | null>(null);
   const [eventsBtnLayout, setEventsBtnLayout] = useState<{x: number, y: number, width: number, height: number} | null>(null);
   const [waysToGiveBtnLayout, setWaysToGiveBtnLayout] = useState<{x: number, y: number, width: number, height: number} | null>(null);
+  const [mediaBtnLayout, setMediaBtnLayout] = useState<{x: number, y: number, width: number, height: number} | null>(null);
   const [aboutBtnPageY, setAboutBtnPageY] = useState<number | null>(null);
   const [eventsBtnPageY, setEventsBtnPageY] = useState<number | null>(null);
   const [waysToGiveBtnPageY, setWaysToGiveBtnPageY] = useState<number | null>(null);
+  const [mediaBtnPageY, setMediaBtnPageY] = useState<number | null>(null);
   const waysToGiveButtonRef = useRef<any>(null);
   const aboutButtonRef = useRef<any>(null);
   const eventsButtonRef = useRef<any>(null);
+  const mediaButtonRef = useRef<any>(null);
   
   // Function to measure Ways to Give button position dynamically
   const measureWaysToGivePosition = () => {
@@ -52,12 +56,22 @@ export default function Navbar({ navItems, currentRoute }: { navItems: string[],
     }
   };
 
+  const measureMediaPosition = () => {
+    if (mediaButtonRef.current) {
+      mediaButtonRef.current.measure((ox: number, oy: number, width: number, height: number, px: number, py: number) => {
+        setMediaBtnPageY(py + height - 60);
+        setMediaBtnLayout({ x: px, y: py, width, height });
+      });
+    }
+  };
+
   // Measure position when dropdown opens
   const handleWaysToGivePress = () => {
     measureWaysToGivePosition();
     setWaysToGiveDropdownVisible((v) => !v);
     setAboutDropdownVisible(false);
     setEventsDropdownVisible(false);
+    setMediaDropdownVisible(false);
   };
 
   const handleAboutPress = () => {
@@ -65,12 +79,22 @@ export default function Navbar({ navItems, currentRoute }: { navItems: string[],
     setAboutDropdownVisible((v) => !v);
     setEventsDropdownVisible(false);
     setWaysToGiveDropdownVisible(false);
+    setMediaDropdownVisible(false);
   };
 
   const handleEventsPress = () => {
     measureEventsPosition();
     setEventsDropdownVisible((v) => !v);
     setAboutDropdownVisible(false);
+    setWaysToGiveDropdownVisible(false);
+    setMediaDropdownVisible(false);
+  };
+
+  const handleMediaPress = () => {
+    measureMediaPosition();
+    setMediaDropdownVisible((v) => !v);
+    setAboutDropdownVisible(false);
+    setEventsDropdownVisible(false);
     setWaysToGiveDropdownVisible(false);
   };
   
@@ -109,6 +133,13 @@ export default function Navbar({ navItems, currentRoute }: { navItems: string[],
     'First Team',
   ];
 
+  const mediaSections = [
+    'Social Media',
+    'Podcast',
+    'Who is Bill Glass? Cards',
+    'Promo Video',
+  ];
+
 
   // Unified navigation for all tabs
   const handleNavPress = (item: string) => {
@@ -118,6 +149,8 @@ export default function Navbar({ navItems, currentRoute }: { navItems: string[],
       handleEventsPress();
     } else if (item === 'Ways to Give') {
       handleWaysToGivePress();
+    } else if (item === 'Media') {
+      handleMediaPress();
     } else if (item === 'Profile') {
       setAboutDropdownVisible(false);
       setEventsDropdownVisible(false);
@@ -159,6 +192,14 @@ export default function Navbar({ navItems, currentRoute }: { navItems: string[],
     setEventsDropdownVisible(false);
     setWaysToGiveDropdownVisible(false);
     setWaysToGiveNowDropdownVisible(false);
+    navigation.navigate(section);
+  };
+
+  const handleMediaSectionPress = (section: string) => {
+    setAboutDropdownVisible(false);
+    setEventsDropdownVisible(false);
+    setWaysToGiveDropdownVisible(false);
+    setMediaDropdownVisible(false);
     navigation.navigate(section);
   };
 
@@ -252,6 +293,21 @@ export default function Navbar({ navItems, currentRoute }: { navItems: string[],
               return (
                 <TouchableOpacity
                   ref={waysToGiveButtonRef}
+                  key={index}
+                  style={[styles.navItem, activeTab === item && styles.activeNavItem]}
+                  onPress={() => handleNavPress(item)}
+                >
+                  <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                    <Text style={[styles.navText, activeTab === item && styles.activeNavText]}>{item}</Text>
+                    <Text style={{ marginLeft: 4, fontSize: 14, color: activeTab === item ? '#1e3a5f' : '#fff' }}>▼</Text>
+                  </View>
+                </TouchableOpacity>
+              );
+            }
+            if (item === 'Media') {
+              return (
+                <TouchableOpacity
+                  ref={mediaButtonRef}
                   key={index}
                   style={[styles.navItem, activeTab === item && styles.activeNavItem]}
                   onPress={() => handleNavPress(item)}
@@ -382,6 +438,42 @@ export default function Navbar({ navItems, currentRoute }: { navItems: string[],
                       <Text style={{ color: '#666', fontSize: 12, marginLeft: 8 }}>›</Text>
                     )}
                   </View>
+                </TouchableOpacity>
+              ))}
+            </View>
+          </View>
+        )}
+        
+        {/* Media Dropdown */}
+        {mediaDropdownVisible && (
+          <View style={styles.dropdownOverlay}>
+            <Pressable style={{ flex: 1 }} onPress={() => setMediaDropdownVisible(false)} />
+            <View style={[
+              styles.dropdownMenuContainer,
+              {
+                position: 'absolute',
+                top: mediaBtnPageY !== null ? mediaBtnPageY : 80,
+                left: mediaBtnLayout ? mediaBtnLayout.x + (mediaBtnLayout.width / 2) - 125 : 50,
+                minWidth: mediaBtnLayout ? mediaBtnLayout.width + 40 : 250,
+                maxWidth: 300,
+              },
+            ]}>
+              {/* Menu Items */}
+              {mediaSections.map((section, idx) => (
+                <TouchableOpacity
+                  key={section}
+                  style={[
+                    styles.dropdownMenuItem,
+                    currentRoute === section && styles.dropdownMenuItemActive
+                  ]}
+                  onPress={() => handleMediaSectionPress(section)}
+                >
+                  <Text style={[
+                    styles.dropdownMenuText,
+                    currentRoute === section && styles.dropdownMenuTextActive
+                  ]}>
+                    {section}
+                  </Text>
                 </TouchableOpacity>
               ))}
             </View>
