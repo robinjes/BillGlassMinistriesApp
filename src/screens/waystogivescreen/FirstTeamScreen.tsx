@@ -1,10 +1,10 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 
-export default function WaysToGiveScreen() {
+export default function FirstTeamScreen() {
   return (
     <View style={styles.container}>
-      <Text style={styles.text}>testing?</Text>
+      <Text style={styles.text}>First Team (Coming Soon)</Text>
     </View>
   );
 }
