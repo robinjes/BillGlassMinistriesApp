@@ -30,8 +30,25 @@ yarn-error.*
 .DS_Store
 *.pem
 
+# IDE
+.vscode/
+
 # local env files
 .env*.local
+.xcode.env
+.xcode.env.local
 
 # typescript
 *.tsbuildinfo
+
+# iOS
+ios/Pods/
+ios/build/
+*.xcworkspace/xcuserdata/
+*.xcodeproj/xcuserdata/
+
+# Android
+android/app/build/
+android/build/
+android/.gradle/
+android/local.properties
