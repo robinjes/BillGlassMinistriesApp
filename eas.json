@@ -7,6 +7,12 @@
         "simulator": false
       }
     },
+    "preview": {
+      "ios": {
+        "distribution": "internal",
+        "simulator": false
+      }
+    },
     "production": {
       "ios": {
         "distribution": "store"

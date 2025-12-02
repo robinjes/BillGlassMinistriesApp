@@ -1,415 +1,151 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Modal, Pressable } from 'react-native';
+import React, { useState, useEffect, useMemo } from 'react';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Modal, Pressable, ActivityIndicator } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { styles as mainStyles } from '../../styles/styles';
+import { RootStackParamList } from '../../navigation/AppNavigator';
+import { fetchEvents } from '../../services/eventsService';
+import { Event } from '../../types/events';
 
-interface Event {
-  id: string;
-  name: string;
-  date: string;
-  deadline: string;
-  description: string;
-  status: 'open' | 'closed' | 'full';
-  location: string;
-  type: 'DOC' | 'Special Ops' | 'Northeast' | 'Christmas';
-  stats?: {
-    teammates: number;
-    rookies: number;
-    conversations: number;
-    newBelievers: number;
-    repented: number;
-    trained: number;
+// Helper function to parse date strings with various formats
+const parseDate = (dateString: string, referenceYear?: number, eventDate?: Date): Date | null => {
+  if (!dateString) return null;
+  
+  const currentYear = referenceYear || new Date().getFullYear();
+  const currentDate = new Date();
+  
+  // Clean up the string - remove day names and extra whitespace
+  let cleaned = dateString.trim()
+    .replace(/^(Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday),?\s*/i, '')
+    .trim();
+  
+  // Handle abbreviated months (Sept. -> September, etc.)
+  const monthAbbr: { [key: string]: string } = {
+    'jan.': 'january', 'feb.': 'february', 'mar.': 'march', 'apr.': 'april',
+    'may.': 'may', 'jun.': 'june', 'jul.': 'july', 'aug.': 'august',
+    'sept.': 'september', 'sep.': 'september', 'oct.': 'october',
+    'nov.': 'november', 'dec.': 'december'
   };
-}
-
-const eventsData: Event[] = [
-  {
-    id: '1',
-    name: 'Sacramento, CA August DOC',
-    date: 'August 9',
-    deadline: 'June 22',
-    description: 'We trained 55 Teammates including 13 Rookies who had 845 Gospel conversations behind the walls. 216 inmates began relationships with Jesus and another 190 repented and returned to Him! We were also able to train 64 to share the Good News.',
-    status: 'closed',
-    location: 'Sacramento, CA',
-    type: 'DOC',
-    stats: {
-      teammates: 55,
-      rookies: 13,
-      conversations: 845,
-      newBelievers: 216,
-      repented: 190,
-      trained: 64
-    }
-  },
-  {
-    id: '2',
-    name: 'Lesotho, Africa DOC',
-    date: 'August 11-17',
-    deadline: 'July 27',
-    description: 'Schedule: Arrive in Lesotho: Friday, August 8, Equip & Ignite Training: Sunday, August 10, Behind the Walls: Monday-Sunday, August 11-17, Depart from Lesotho: Monday, August 18',
-    status: 'closed',
-    location: 'Lesotho, Africa',
-    type: 'DOC'
-  },
-  {
-    id: '3',
-    name: 'Nashville, TN DOC',
-    date: 'Friday, August 22',
-    deadline: 'June 1',
-    description: 'We trained 37 Teammates including 10 Rookies who had 130 Gospel conversations behind the walls. 18 inmates began relationships with Jesus and another 30 repented and returned to Him! We were also able to train 26 to share the Good News.',
-    status: 'closed',
-    location: 'Nashville, TN',
-    type: 'DOC',
-    stats: {
-      teammates: 37,
-      rookies: 10,
-      conversations: 130,
-      newBelievers: 18,
-      repented: 30,
-      trained: 26
-    }
-  },
-  {
-    id: '4',
-    name: 'DFW, TX West DOC',
-    date: 'August 23',
-    deadline: 'July 13',
-    description: 'We trained 89 Teammates including 20 Rookies who had 718 Gospel conversations behind the walls. 139 inmates began relationships with Jesus and another 265 repented and returned to Him! We were also able to train 165 to share the Good News.',
-    status: 'closed',
-    location: 'DFW, TX',
-    type: 'DOC',
-    stats: {
-      teammates: 89,
-      rookies: 20,
-      conversations: 718,
-      newBelievers: 139,
-      repented: 265,
-      trained: 165
-    }
-  },
-  {
-    id: '5',
-    name: 'Fresno, CA August DOC',
-    date: 'August 23',
-    deadline: 'July 13',
-    description: 'We trained 82 Teammates including 21 Rookies who had 680 Gospel conversations behind the walls. 148 inmates began relationships with Jesus and another 232 repented and returned to Him! We were also able to train 62 to share the Good News.',
-    status: 'closed',
-    location: 'Fresno, CA',
-    type: 'DOC',
-    stats: {
-      teammates: 82,
-      rookies: 21,
-      conversations: 680,
-      newBelievers: 148,
-      repented: 232,
-      trained: 62
-    }
-  },
-  {
-    id: '6',
-    name: 'Chillicothe, OH DOC',
-    date: 'August 30',
-    deadline: 'July 20',
-    description: 'We trained 73 Teammates including 21 Rookies who had 612 Gospel conversations behind the walls. 74 inmates began relationships with Jesus and another 119 repented and returned to Him! We were also able to train 84 to share the Good News.',
-    status: 'closed',
-    location: 'Chillicothe, OH',
-    type: 'DOC',
-    stats: {
-      teammates: 73,
-      rookies: 21,
-      conversations: 612,
-      newBelievers: 74,
-      repented: 119,
-      trained: 84
-    }
-  },
-  {
-    id: '7',
-    name: 'San Francisco, CA DOC',
-    date: 'September 6',
-    deadline: 'August 3',
-    description: 'REGISTRATION IS FULL',
-    status: 'full',
-    location: 'San Francisco, CA',
-    type: 'DOC'
-  },
-  {
-    id: '8',
-    name: 'Teague, TX DOC',
-    date: 'September 6',
-    deadline: 'July 27',
-    description: 'REGISTRATION IS CLOSED',
-    status: 'closed',
-    location: 'Teague, TX',
-    type: 'DOC'
-  },
-  {
-    id: '9',
-    name: 'Chillicothe, MO DOC',
-    date: 'September 13',
-    deadline: 'August 10',
-    description: 'REGISTRATION IS CLOSED',
-    status: 'closed',
-    location: 'Chillicothe, MO',
-    type: 'DOC'
-  },
-  {
-    id: '10',
-    name: 'Adrian, MI DOC',
-    date: 'September 20',
-    deadline: 'August 31',
-    description: 'REGISTRATION IS CLOSED',
-    status: 'closed',
-    location: 'Adrian, MI',
-    type: 'DOC'
-  },
-  {
-    id: '11',
-    name: 'Cincinnati, OH DOC',
-    date: 'September 20',
-    deadline: 'August 10',
-    description: 'REGISTRATION IS CLOSED',
-    status: 'closed',
-    location: 'Cincinnati, OH',
-    type: 'DOC'
-  },
-  {
-    id: '12',
-    name: 'Malawi, Africa DOC',
-    date: 'September 25-27',
-    deadline: 'September 7',
-    description: 'Schedule: Arrive in Malawi: Monday, September 22, Equip & Ignite Training: Wednesday, September 24, Behind the Walls: Thursday-Saturday, September 25-27, Depart from Malawi: Sunday, September 28',
-    status: 'closed',
-    location: 'Malawi, Africa',
-    type: 'DOC'
-  },
-  {
-    id: '13',
-    name: 'San Diego, CA DOC',
-    date: 'Friday, September 26',
-    deadline: 'July 20',
-    description: 'REGISTRATION IS CLOSED',
-    status: 'closed',
-    location: 'San Diego, CA',
-    type: 'DOC'
-  },
-  {
-    id: '14',
-    name: 'Beaumont, TX DOC',
-    date: 'September 27',
-    deadline: 'August 24',
-    description: 'REGISTRATION IS CLOSED',
-    status: 'closed',
-    location: 'Beaumont, TX',
-    type: 'DOC'
-  },
-  {
-    id: '15',
-    name: 'Milton, FL DOC',
-    date: 'October 4',
-    deadline: 'September 14',
-    description: 'We need 100+ Teammates including 25 Bikes to take the Gospel behind the walls of a men\'s correctional facility. If you are a female and would like to serve on this event, click here to see if you are eligible. Additional security form required to serve. More information on Event Info page.',
-    status: 'open',
-    location: 'Milton, FL',
-    type: 'DOC'
-  },
-  {
-    id: '16',
-    name: 'Palestine, TX DOC',
-    date: 'October 4',
-    deadline: 'August 31',
-    description: 'REGISTRATION IS CLOSED',
-    status: 'closed',
-    location: 'Palestine, TX',
-    type: 'DOC'
-  },
-  {
-    id: '17',
-    name: 'Springfield, MO DOC',
-    date: 'October 11',
-    deadline: 'September 21',
-    description: 'We need 60 Teammates including 20 Bikes to take the Gospel behind the walls of a men\'s facility. If you are a male and would like to serve on this event, click here to see if you are eligible. Your registration will not be finalized until you complete the additional security form. More information on the Event Info page.',
-    status: 'open',
-    location: 'Springfield, MO',
-    type: 'DOC'
-  },
-  {
-    id: '18',
-    name: 'Arizona DOC',
-    date: 'Friday, October 17',
-    deadline: 'September 21',
-    description: 'We have spots for 70 Teammates including 5 motorcycles to take the Good News behind the walls of a Men\'s facility. If you are a female and would like to serve on this event, click here to see if you are eligible.',
-    status: 'open',
-    location: 'Arizona',
-    type: 'DOC'
-  },
-  {
-    id: '19',
-    name: 'Crestview/Baker, FL DOC',
-    date: 'October 18',
-    deadline: 'September 7',
-    description: 'We need 75 Teammates including 25 Bikes to take the Gospel behind the walls of a men\'s facility. If you are a female and would like to serve on this event, click here to see if you are eligible. Your registration will not be finalized until you complete the additional security form. More information on Event Info page.',
-    status: 'open',
-    location: 'Crestview/Baker, FL',
-    type: 'DOC'
-  },
-  {
-    id: '20',
-    name: 'Oklahoma City Special Ops',
-    date: 'October 18',
-    deadline: 'September 14',
-    description: 'We have spots for 55 Teammates to take the Gospel behind the walls of a men\'s facility. We will meet the morning of the event, board a bus, get trained on the way, and then take the Good News into the facility. Breakfast and dinner will be provided on the bus. If you are wanting to serve in a facility with the opposite gender, click here to see if you are eligible. Your registration will not be finalized until you complete the additional security form. More information on Event Info page.',
-    status: 'open',
-    location: 'Oklahoma City',
-    type: 'Special Ops'
-  },
-  {
-    id: '21',
-    name: 'Fresno, CA October DOC',
-    date: 'Friday, October 24',
-    deadline: 'Wednesday, Sept. 10',
-    description: 'We need 200 Teammates including 30 Bikes to take the Gospel behind the walls of 2 men\'s facilities. If you are a female and would like to serve on this event, click here to see if you are eligible. Your registration will not be finalized until you complete the additional security form. More information on Event Info page.',
-    status: 'open',
-    location: 'Fresno, CA',
-    type: 'DOC'
-  },
-  {
-    id: '22',
-    name: 'Lake City, FL DOC',
-    date: 'October 25',
-    deadline: 'September 21',
-    description: 'We need 60 Teammates including 10 Bikes to take the Gospel behind the walls of a men\'s facility. If you are a female and would like to serve on this event, click here to see if you are eligible. Your registration will not be finalized until you complete the additional security form. More information on Event Info page.',
-    status: 'open',
-    location: 'Lake City, FL',
-    type: 'DOC'
-  },
-  {
-    id: '23',
-    name: 'Louisville, KY DOC',
-    date: 'October 25',
-    deadline: 'September 28',
-    description: 'We need 110 Teammates, including 25 Bikes, to take the Good News behind the walls of one men\'s facility and one women\'s facility. If you wish to serve in a facility of the opposite gender, click here to see if you are eligible. Your registration will not be finalized until you complete the additional security steps. More information on the Event Info page',
-    status: 'open',
-    location: 'Louisville, KY',
-    type: 'DOC'
-  },
-  {
-    id: '24',
-    name: 'Austin, TX November DOC',
-    date: 'November 1',
-    deadline: 'October 12',
-    description: 'We have spots for 40 Teammates, including 15 motorcycles, to take the Good News of a men\'s correctional facility. If you are a female and would like to serve on this event, click here to see if you are eligible.',
-    status: 'open',
-    location: 'Austin, TX',
-    type: 'DOC'
-  },
-  {
-    id: '25',
-    name: 'Nashville, TN November DOC',
-    date: 'Friday, November 7',
-    deadline: 'August 10',
-    description: 'We have spots for 40 men and women Teammates to serve in a women\'s correctional facility. If you are a male and would like to serve on this event, click here to see if you are eligible.',
-    status: 'open',
-    location: 'Nashville, TN',
-    type: 'DOC'
-  },
-  {
-    id: '26',
-    name: 'Little Rock, AR DOC',
-    date: 'November 8',
-    deadline: 'October 5',
-    description: 'We have spots for 40 men and 20 women to take the Good News behind the walls of a regional detention center.',
-    status: 'open',
-    location: 'Little Rock, AR',
-    type: 'DOC'
-  },
-  {
-    id: '27',
-    name: 'Winnsboro, TX DOC',
-    date: 'November 8',
-    deadline: 'October 12',
-    description: 'We have spots for 50 Teammates including 5 Bikes. We will be serving in a men\'s correctional facility. If you are a female and would like to serve on this event, click here to see if you are eligible.',
-    status: 'open',
-    location: 'Winnsboro, TX',
-    type: 'DOC'
-  },
-  {
-    id: '28',
-    name: 'Nashville, TN Northeast',
-    date: 'November 15',
-    deadline: 'October 12',
-    description: 'We need 100 Teammates (men and women!) including 20 Bikes to take the Gospel behind the walls of a men\'s facility. If you are a female and would like to serve on this event, click here to see if you are eligible.',
-    status: 'open',
-    location: 'Nashville, TN',
-    type: 'Northeast'
-  },
-  {
-    id: '29',
-    name: 'DFW, TX November DOC',
-    date: 'November 22',
-    deadline: 'October 21',
-    description: 'We need 108 Teammates including 10 Bikes to take the Gospel behind the walls of two men\'s facilities. If you are a female and would like to serve on this event, click here to see if you are eligible. Your registration will not be finalized until you complete the additional security form. More information on Event Info page.',
-    status: 'open',
-    location: 'DFW, TX',
-    type: 'DOC'
-  },
-  {
-    id: '30',
-    name: 'Dayton, TX Christmas DOC',
-    date: 'December 13',
-    deadline: 'November 9',
-    description: 'We have spots for 50 Teammates (women and men!), including 10 motorcycles, to take the Good News behind the walls of a women\'s correctional facility. If you are a male and would like to serve on this event, click here to see if you are eligible.',
-    status: 'open',
-    location: 'Dayton, TX',
-    type: 'Christmas'
-  },
-  {
-    id: '31',
-    name: 'Las Vegas, NV DOC',
-    date: 'December 13',
-    deadline: 'November 2',
-    description: 'We have spots for 70 Teammates to take the Good News behind the walls of a detention facility that houses men and women. Your registration will not be finalized until you complete the additional security steps. More information on Event Info page.',
-    status: 'open',
-    location: 'Las Vegas, NV',
-    type: 'DOC'
-  },
-  {
-    id: '32',
-    name: 'Fresno, CA February DOC',
-    date: 'February 7, 2026',
-    deadline: 'December 14',
-    description: 'We have spots for 100 Teammates to take the Good News behind the walls of a county jail. Your registration will not be finalized until you complete the additional security steps. More information on Event Info page.',
-    status: 'open',
-    location: 'Fresno, CA',
-    type: 'DOC'
-  },
-  {
-    id: '33',
-    name: 'Cook County, IL DOC',
-    date: 'April 11, 2026',
-    deadline: 'March 22',
-    description: 'We have spots for 60 Teammates (male and female) to take the Good News behind the walls of Cook County Jail. A copy of your picture ID is required to serve. More information on event info page.',
-    status: 'open',
-    location: 'Cook County, IL',
-    type: 'DOC'
-  },
-  {
-    id: '34',
-    name: 'Shreveport, LA DOC',
-    date: 'May 23, 2026',
-    deadline: 'April 19',
-    description: 'We need 70 Teammates including 20 Bikes to take the Gospel behind the walls of a men\'s facility. If you are a female and would like to serve on this event, click here to see if you are eligible.',
-    status: 'open',
-    location: 'Shreveport, LA',
-    type: 'DOC'
+  
+  for (const [abbr, full] of Object.entries(monthAbbr)) {
+    cleaned = cleaned.replace(new RegExp(`^${abbr}\\s`, 'i'), full + ' ');
   }
-];
+  
+  // Try to parse the date
+  const months = [
+    'january', 'february', 'march', 'april', 'may', 'june',
+    'july', 'august', 'september', 'october', 'november', 'december'
+  ];
+  
+  // Pattern: "Month Day" or "Month Day, Year"
+  const match = cleaned.match(/^(\w+)\s+(\d+)(?:,\s*(\d{4}))?/i);
+  if (match) {
+    const monthName = match[1].toLowerCase();
+    const day = parseInt(match[2], 10);
+    let year = match[3] ? parseInt(match[3], 10) : currentYear;
+    
+    const monthIndex = months.findIndex(m => m.startsWith(monthName));
+    if (monthIndex !== -1 && day > 0 && day <= 31) {
+      // If we have an event date and no year specified, use smart year inference
+      if (!match[3] && eventDate) {
+        const eventYear = eventDate.getFullYear();
+        const eventMonth = eventDate.getMonth();
+        // If deadline month is after event month, assume previous year
+        // Otherwise assume same year as event
+        if (monthIndex > eventMonth) {
+          year = eventYear - 1;
+        } else {
+          year = eventYear;
+        }
+      }
+      
+      const date = new Date(year, monthIndex, day);
+      // If the date is in the past and no year was specified and no event date, try next year
+      if (!match[3] && !eventDate && date < currentDate && date.getFullYear() === currentYear) {
+        return new Date(year + 1, monthIndex, day);
+      }
+      return date;
+    }
+  }
+  
+  return null;
+};
+
+// Helper function to extract year from event date string
+const extractYearFromEventDate = (eventDate: string): number | undefined => {
+  const yearMatch = eventDate.match(/\b(20\d{2})\b/);
+  if (yearMatch) {
+    return parseInt(yearMatch[1], 10);
+  }
+  return undefined;
+};
+
+type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
 export default function EvangelismEventsScreen() {
+  const navigation = useNavigation<NavigationProp>();
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
   const [filter, setFilter] = useState<'all' | 'open' | 'closed' | 'full'>('all');
   const [sortBy, setSortBy] = useState<'date' | 'location' | 'type'>('date');
+  const [events, setEvents] = useState<Event[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
-  const filteredEvents = eventsData
+  // Load events from bundled JSON file
+  useEffect(() => {
+    const loadEvents = async () => {
+      setIsLoading(true);
+      try {
+        const fetchedEvents = await fetchEvents();
+        console.log('Fetched events in screen:', fetchedEvents);
+        console.log('Number of events fetched:', fetchedEvents.length);
+        setEvents(fetchedEvents);
+      } catch (error) {
+        console.error('Error loading events:', error);
+        setEvents([]);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadEvents();
+  }, []);
+
+  // Process events to automatically close those past their deadline
+  const processedEvents = useMemo(() => {
+    const currentDate = new Date();
+    currentDate.setHours(0, 0, 0, 0); // Set to start of day for comparison
+    
+    return events.map(event => {
+      // Only process events that are currently 'open' (don't override 'closed' or 'full')
+      if (event.status !== 'open') {
+        return event;
+      }
+      
+      // Extract year from event date if available
+      const eventYear = extractYearFromEventDate(event.date);
+      
+      // Parse the event date to help with deadline year inference
+      const parsedEventDate = parseDate(event.date, eventYear);
+      
+      // Parse the deadline date, using event date for smart year inference
+      const deadlineDate = parseDate(event.deadline, eventYear, parsedEventDate || undefined);
+      
+      if (deadlineDate) {
+        deadlineDate.setHours(23, 59, 59, 999); // Set to end of deadline day
+        // If deadline has passed, close the event
+        if (deadlineDate < currentDate) {
+          return {
+            ...event,
+            status: 'closed' as const
+          };
+        }
+      }
+      
+      return event;
+    });
+  }, [events]); // Recalculate when events change
+
+  const filteredEvents = processedEvents
     .filter(event => {
       if (filter === 'all') return true;
       return event.status === filter;
@@ -417,7 +153,10 @@ export default function EvangelismEventsScreen() {
     .sort((a, b) => {
       switch (sortBy) {
         case 'date':
-          return new Date(a.date).getTime() - new Date(b.date).getTime();
+          // Try to parse dates for sorting, fallback to string comparison
+          const dateA = parseDate(a.date) || new Date(0);
+          const dateB = parseDate(b.date) || new Date(0);
+          return dateA.getTime() - dateB.getTime();
         case 'location':
           return a.location.localeCompare(b.location);
         case 'type':
@@ -447,6 +186,15 @@ export default function EvangelismEventsScreen() {
 
   // Combine main styles with event-specific styles
   const styles = { ...mainStyles, ...eventStyles };
+
+  if (isLoading) {
+    return (
+      <View style={[styles.container, { justifyContent: 'center', alignItems: 'center', flex: 1 }]}>
+        <ActivityIndicator size="large" color="#1e3a5f" />
+        <Text style={{ marginTop: 16, color: '#6c757d' }}>Loading events...</Text>
+      </View>
+    );
+  }
 
   return (
     <ScrollView style={styles.container}>
@@ -555,6 +303,15 @@ export default function EvangelismEventsScreen() {
           ))}
         </View>
 
+        {/* Disclaimer Text */}
+        <View style={styles.disclaimerContainer}>
+          <Text style={styles.disclaimerText}>
+            <Text style={styles.disclaimerBold}>PLEASE READ{'\n\n'}</Text>
+            Our events have a limited number of spots and once one is claimed, it cannot be released. Be mindful when you register that if you are not able to serve, you could be taking another volunteer's opportunity to do so. We ask that all registrants be 100% committed to attending.{'\n\n'}
+            If an emergency prevents your participation, contact the National Support Center immediately at 972.298.1101.
+          </Text>
+        </View>
+
         {/* Event Detail Modal */}
         <Modal
           visible={selectedEvent !== null}
@@ -610,6 +367,19 @@ export default function EvangelismEventsScreen() {
                         </View>
                       </View>
                     )}
+                    
+                    {/* Registration Button - Show for all events */}
+                    <View style={styles.modalRegistrationContainer}>
+                      <TouchableOpacity
+                        style={styles.registrationButton}
+                        onPress={() => {
+                          setSelectedEvent(null);
+                          navigation.navigate('Event Registration', { eventId: selectedEvent.id });
+                        }}
+                      >
+                        <Text style={styles.registrationButtonText}>Register</Text>
+                      </TouchableOpacity>
+                    </View>
                   </ScrollView>
                 </View>
               )}
@@ -850,5 +620,36 @@ const eventStyles = StyleSheet.create({
     marginBottom: 6,
     fontWeight: '500',
     minWidth: '45%',
+  },
+  modalRegistrationContainer: {
+    marginTop: 16,
+    marginBottom: 8,
+  },
+  registrationButton: {
+    backgroundColor: '#1e3a5f', // Blue background
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    borderRadius: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  registrationButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  disclaimerContainer: {
+    padding: 20,
+    paddingHorizontal: 20,
+    marginBottom: 20,
+  },
+  disclaimerText: {
+    fontSize: 11,
+    color: '#F44336',
+    lineHeight: 16,
+    textAlign: 'left',
+  },
+  disclaimerBold: {
+    fontWeight: 'bold',
   },
 });

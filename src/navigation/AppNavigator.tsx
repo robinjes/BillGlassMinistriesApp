@@ -29,6 +29,7 @@ import AfricaEvangelismEventsScreen from '../screens/eventsscreen/AfricaEvangeli
 import HowToRegisterScreen from '../screens/eventsscreen/HowToRegisterScreen';
 import WhatToExpectScreen from '../screens/eventsscreen/WhatToExpectScreen';
 import WhoCanServeScreen from '../screens/eventsscreen/WhoCanServeScreen';
+import EventRegistrationScreen from '../screens/eventsscreen/EventRegistrationScreen';
 
 
 type RootStackParamList = {
@@ -74,6 +75,7 @@ type RootStackParamList = {
   'Other Ways to Give': undefined;
   'Memorial Gift': undefined;
   'Ways to Give Contact Form': undefined;
+  'Event Registration': { eventId: string };
 };
 export type { RootStackParamList };
 import OpenPositionsFormScreen from '../screens/aboutscreen/OpenPositionsFormScreen';
@@ -169,8 +171,9 @@ export default function AppNavigator() {
         <Stack.Screen name="Equipping Volunteers" component={EquippingVolunteersScreen} />
         <Stack.Screen name="Store" component={StoreScreen} />
         <Stack.Screen name="Profile" component={ProfileScreen} />
-  <Stack.Screen name="PlatformGuestForm" component={PlatformGuestFormScreen} />
-  <Stack.Screen name="JoinLocalTeamForm" component={JoinLocalTeamFormScreen} />
+        <Stack.Screen name="PlatformGuestForm" component={PlatformGuestFormScreen} />
+        <Stack.Screen name="JoinLocalTeamForm" component={JoinLocalTeamFormScreen} />
+        <Stack.Screen name="Event Registration" component={EventRegistrationScreen} />
       </Stack.Navigator>
     </NavigationContainer>
   );
