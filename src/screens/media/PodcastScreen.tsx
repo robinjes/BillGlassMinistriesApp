@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, Image, Linking, TouchableOpacity } from 'react-native';
 import { WebView } from 'react-native-webview';
-import { MaterialIcons, AntDesign, Ionicons } from '@expo/vector-icons';
+import { MaterialIcons, AntDesign } from '@expo/vector-icons';
 
 export default function PodcastScreen() {
   const [booksExpanded, setBooksExpanded] = useState(false);

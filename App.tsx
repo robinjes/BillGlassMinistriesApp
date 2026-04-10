@@ -1,6 +1,6 @@
-
 import React, { useEffect, useRef, useState } from 'react';
-import { View, Animated, StyleSheet, Image } from 'react-native';
+import { View, Animated, StyleSheet } from 'react-native';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 import AppNavigator from './src/navigation/AppNavigator';
 
 export default function App() {
@@ -19,24 +19,27 @@ export default function App() {
         duration: 800,
         delay: 400,
         useNativeDriver: true,
-      })
+      }),
     ]).start(() => {
       setShowSplash(false);
     });
   }, [fadeAnim]);
 
-  if (showSplash) {
-    return (
-      <View style={styles.container}>
-        <Animated.Image
-          source={require('./assets/Billglass.jpg')}
-          style={[styles.centeredImage, { opacity: fadeAnim }]}
-          resizeMode="contain"
-        />
-      </View>
-    );
-  }
-  return <AppNavigator />;
+  return (
+    <SafeAreaProvider>
+      {showSplash ? (
+        <View style={styles.container}>
+          <Animated.Image
+            source={require('./assets/other/Billglass.jpg')}
+            style={[styles.centeredImage, { opacity: fadeAnim }]}
+            resizeMode="contain"
+          />
+        </View>
+      ) : (
+        <AppNavigator />
+      )}
+    </SafeAreaProvider>
+  );
 }
 
 const styles = StyleSheet.create({

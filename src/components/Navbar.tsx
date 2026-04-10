@@ -1,9 +1,9 @@
 // src/components/Navbar.tsx
 import React, { useState, useRef } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, Image, Modal, Pressable } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, Image, Pressable } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { styles } from '../styles/styles';
-import { useNavigation, useRoute } from '@react-navigation/native';
+import { useNavigation } from '@react-navigation/native';
 
 export default function Navbar({ navItems, currentRoute }: { navItems: string[], currentRoute: string }) {
   const navigation = useNavigation<any>();
@@ -108,13 +108,27 @@ export default function Navbar({ navItems, currentRoute }: { navItems: string[],
     'Platform Guests',
     'Frequently Asked Questions',
   ];
+  // Public Events dropdown menu items only.
   const eventsSections = [
     'Evangelism Events',
-    'Africa Evangelism Events',
-    'How to Register for an Event',
+    '2026 Africa Evangelism Events',
+    'Registering for Events',
     'What to Expect at Our Events',
     'Who Can Serve on a Bill Glass Behind the Walls Event?',
     'Join a Local Team',
+    '6th Annual Golf Challenge',
+    '1st Annual Missouri Golf Challenge',
+  ];
+  // Keep Events tab highlighted on internal events routes, but do not show them in dropdown.
+  const eventsTabRoutes = [
+    ...eventsSections,
+    'Creating a Portal Account',
+    'Evangelism Event Detail',
+    'Event WebView',
+    'Event Registration',
+    'Action Steps',
+    '6th Annual Golf Challenge Registration',
+    '1st Annual Missouri Golf Challenge Registration',
   ];
   const waysToGiveSections = [
     'Ways to Give Now',
@@ -210,8 +224,8 @@ export default function Navbar({ navItems, currentRoute }: { navItems: string[],
       return aboutSections.includes(currentRoute);
     }
     if (item === 'Events') {
-      // If current route is any events section, highlight Events
-      return eventsSections.includes(currentRoute);
+      // If current route is any events section (including internal routes), highlight Events
+      return eventsTabRoutes.includes(currentRoute);
     }
     if (item === 'Ways to Give') {
       // If current route is any ways to give section, highlight Ways to Give
@@ -227,7 +241,7 @@ export default function Navbar({ navItems, currentRoute }: { navItems: string[],
         <TouchableOpacity style={styles.logoContainer} onPress={() => { setAboutDropdownVisible(false); setEventsDropdownVisible(false); setWaysToGiveDropdownVisible(false); navigation.navigate('Home'); }}>
           <View style={styles.logoBackground}>
             <Image 
-              source={require('../../assets/icon.png')} 
+              source={require('../../assets/other/icon.png')} 
               style={styles.navLogo}
               resizeMode="contain"
             />

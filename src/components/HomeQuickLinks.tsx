@@ -12,9 +12,9 @@ export default function HomeQuickLinks() {
         <Ionicons name="calendar-outline" size={40} color="#fff" style={styles.icon} />
         <Text style={styles.linkText}>Upcoming Events</Text>
       </TouchableOpacity>
-      <TouchableOpacity style={styles.linkItem} onPress={() => navigation.navigate('Events')}>
+      <TouchableOpacity style={styles.linkItem} onPress={() => navigation.navigate('Registering for Events')}>
         <MaterialCommunityIcons name="clipboard-list-outline" size={40} color="#fff" style={styles.icon} />
-        <Text style={styles.linkText}>How to Register for an Event</Text>
+        <Text style={styles.linkText}>Registering for Events</Text>
       </TouchableOpacity>
       <TouchableOpacity style={styles.linkItem} onPress={() => navigation.navigate('Ways to Give')}>
         <FontAwesome5 name="handshake" size={40} color="#fff" style={styles.icon} />

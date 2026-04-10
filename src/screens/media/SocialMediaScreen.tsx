@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet, ScrollView, Image, TouchableOpacity, Linking } from 'react-native';
-import { FontAwesome5, MaterialIcons } from '@expo/vector-icons';
+import { FontAwesome5 } from '@expo/vector-icons';
 
 export default function SocialMediaScreen() {
   const handleSocialPress = (url: string) => {
@@ -16,7 +16,7 @@ export default function SocialMediaScreen() {
       <View style={styles.contentContainer}>
         <View style={styles.imageContainer}>
           <Image 
-            source={require('../../../assets/socialmedia.jpg')} 
+            source={require('../../../assets/other/socialmedia.jpg')} 
             style={styles.image}
             resizeMode="contain"
           />

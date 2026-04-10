@@ -1,47 +1,60 @@
-// Events Service - Loads events directly from bundled JSON file
-import { Event } from '../types/events';
-import eventsData from '../data/events.json';
+import type { Event, EventsResponse } from '../types/events';
+import { EVENTS_JSON_RAW_URL } from '../config/eventsConfig';
+import bundledEvents from '../../assets/events.json';
+
+function isEventsResponse(data: unknown): data is EventsResponse {
+  if (!data || typeof data !== 'object') return false;
+  const o = data as Record<string, unknown>;
+  return (
+    o.source === 'behindthewalls.com' &&
+    typeof o.evangelismEventsUrl === 'string' &&
+    typeof o.updatedAt === 'string' &&
+    Array.isArray(o.events)
+  );
+}
+
+function normalizeResponse(data: unknown): EventsResponse | null {
+  if (isEventsResponse(data)) return data;
+  return null;
+}
 
 /**
- * Loads events directly from bundled events.json file
- * No API needed - events are bundled with the app
+ * Loads evangelism events: tries GitHub raw JSON first, then bundled `assets/events.json`.
  */
-export async function fetchEvents(): Promise<Event[]> {
+export async function fetchEventsResponse(): Promise<EventsResponse> {
   try {
-    // Load events directly from bundled JSON file
-    const data = eventsData as { events: Event[] } | Event[];
-    
-    console.log('Loaded events data:', data);
-    
-    // Handle both formats: { events: [...] } or [...]
-    let events: Event[] = [];
-    if (Array.isArray(data)) {
-      events = data;
-    } else if (data && typeof data === 'object' && 'events' in data && Array.isArray(data.events)) {
-      events = data.events;
+    const res = await fetch(`${EVENTS_JSON_RAW_URL}?t=${Date.now()}`, {
+      headers: { Accept: 'application/json' },
+    });
+    if (res.ok) {
+      const json: unknown = await res.json();
+      const parsed = normalizeResponse(json);
+      if (parsed) return parsed;
     }
-    
-    console.log('Parsed events:', events);
-    console.log('Number of events:', events.length);
-    
-    return events;
-  } catch (error) {
-    console.error('Error loading events from JSON:', error);
-    return [];
+  } catch {
+    // fall through to bundled
   }
+
+  const parsed = normalizeResponse(bundledEvents as unknown);
+  if (parsed) return parsed;
+
+  const now = new Date().toISOString();
+  return {
+    source: 'behindthewalls.com',
+    evangelismEventsUrl: 'https://www.behindthewalls.com/evangelism-events',
+    africaEvangelismEventsUrl: 'https://www.behindthewalls.com/africaevents',
+    updatedAt: now,
+    events: [],
+    africaEvangelismLines: [],
+  };
 }
 
-/**
- * Fetches a single event by ID from events.json file
- * Returns null if not found
- */
+export async function fetchEvents(): Promise<Event[]> {
+  const r = await fetchEventsResponse();
+  return r.events;
+}
+
 export async function fetchEventById(eventId: string): Promise<Event | null> {
-  try {
-    const events = await fetchEvents();
-    return events.find(e => e.id === eventId) || null;
-  } catch (error) {
-    console.error('Error loading event from JSON:', error);
-    return null;
-  }
+  const events = await fetchEvents();
+  return events.find((e) => e.id === eventId || e.slug === eventId) ?? null;
 }
-

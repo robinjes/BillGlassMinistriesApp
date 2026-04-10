@@ -388,6 +388,15 @@ export const styles = StyleSheet.create({
     textAlign: 'left',
     fontFamily: 'System',
   },
+  /** Event stack: center hero title + yellow bar (wrap only title row, not full-width body below). */
+  eventScreenTitleBlock: {
+    alignItems: 'center',
+    width: '100%',
+  },
+  eventScreenMissionTitle: {
+    textAlign: 'center',
+    width: '100%',
+  },
   missionText: {
     fontSize: 18,
     color: '#1e3a5f',
