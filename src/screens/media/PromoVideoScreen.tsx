@@ -19,7 +19,7 @@ export default function PromoVideoScreen() {
       
       <View style={styles.videoContainer}>
         <Video
-          source={require('../../../assets/other/behindthewalls_promo.mp4')}
+          source={require('../../../assets/equipping_volunteers/behindthewalls_promo.mp4')}
           style={styles.video}
           useNativeControls
           resizeMode={ResizeMode.CONTAIN}

@@ -35,9 +35,9 @@ const SECTION_PLACEHOLDER =
   'Add your content for this section (text, video links, downloads, etc.). This is placeholder copy you can replace.';
 
 /** Local file or `{ uri: 'https://...mp4' }` — replace if you use a different video for this section. */
-const EXPERIENCE_BEHIND_THE_WALLS_VIDEO_SOURCE = require('../../../assets/other/behindthewalls_promo.mp4');
-const TEAMMATE_PACKET_IMAGE_SOURCE = require('../../../assets/other/tpacket.png');
-const EVENT_PREP_IMAGE_SOURCE = require('../../../assets/other/eventprep.png');
+const EXPERIENCE_BEHIND_THE_WALLS_VIDEO_SOURCE = require('../../../assets/equipping_volunteers/behindthewalls_promo.mp4');
+const TEAMMATE_PACKET_IMAGE_SOURCE = require('../../../assets/equipping_volunteers/tpacket.png');
+const EVENT_PREP_IMAGE_SOURCE = require('../../../assets/equipping_volunteers/eventprep.png');
 const ACTION_STEPS_IMAGE_SOURCE = require('../../../assets/cards/actionsteps.png');
 
 const EXPERIENCE_PARA_1 =

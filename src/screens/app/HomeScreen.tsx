@@ -31,7 +31,7 @@ export default function HomeScreen() {
         <Video
           ref={video}
           style={styles.backgroundVideo}
-          source={require('../../../assets/other/behindthewalls_promo.mp4')}
+          source={require('../../../assets/equipping_volunteers/behindthewalls_promo.mp4')}
           useNativeControls={false}
           resizeMode={ResizeMode.COVER}
           isLooping
