@@ -63,6 +63,40 @@ function mergeStatus(fromList, detailText, hasRegisterCta) {
   return fromDetail;
 }
 
+/** @param {string | undefined} text */
+function inferYearFromDateText(text) {
+  if (!text) return undefined;
+  const match = text.match(/\b(20\d{2})\b/);
+  return match ? Number(match[1]) : undefined;
+}
+
+/** @param {string | undefined} text */
+function parseMonthDay(text) {
+  if (!text) return null;
+  const match = text.match(
+    /\b(?:monday|tuesday|wednesday|thursday|friday|saturday|sunday,\s+)?(january|february|march|april|may|june|july|august|september|october|november|december)\s+(\d{1,2})(?:st|nd|rd|th)?(?:,\s*(20\d{2}))?/i,
+  );
+  if (!match) return null;
+  const month = new Date(`${match[1]} 1, 2000`).getMonth();
+  const day = Number(match[2]);
+  const explicitYear = match[3] ? Number(match[3]) : undefined;
+  if (!Number.isFinite(day) || day < 1 || day > 31 || Number.isNaN(month)) return null;
+  return { month, day, explicitYear };
+}
+
+function isDeadlinePast(deadlineText, startDateText, now = new Date()) {
+  const parsed = parseMonthDay(deadlineText);
+  if (!parsed) return false;
+
+  const startYear = inferYearFromDateText(startDateText);
+  const fallbackYear = startYear ?? now.getUTCFullYear();
+  const year = parsed.explicitYear ?? fallbackYear;
+
+  // Treat the deadline as end-of-day UTC to avoid closing early.
+  const deadlineUtc = new Date(Date.UTC(year, parsed.month, parsed.day, 23, 59, 59));
+  return deadlineUtc.getTime() < now.getTime();
+}
+
 /** @param {string} href */
 function slugFromEventHref(href) {
   if (!href || typeof href !== 'string') return null;
@@ -327,6 +361,10 @@ async function scrape() {
       detailHtml = await fetchText(detailUrl);
     } catch (e) {
       console.warn('  detail fetch failed:', e.message);
+      let status = listRow.listStatus === 'UNKNOWN' ? 'UNKNOWN' : listRow.listStatus;
+      if (status !== 'FULL' && isDeadlinePast(listRow.deadlineText, listRow.startDateText)) {
+        status = 'CLOSED';
+      }
       events.push({
         id: slug,
         slug,
@@ -334,7 +372,7 @@ async function scrape() {
         startDateText: listRow.startDateText,
         endDateText: undefined,
         deadlineText: listRow.deadlineText,
-        status: listRow.listStatus === 'UNKNOWN' ? 'UNKNOWN' : listRow.listStatus,
+        status,
         summary: listRow.summary,
         detailUrl,
         lastScrapedAt: nowIso,
@@ -382,7 +420,10 @@ async function scrape() {
     const detailBlob = $detail('#dmFirstContainer').text();
     const hasRegisterCta =
       /continue to registration|register for event/i.test(detailBlob) || Boolean(registerUrl);
-    const status = mergeStatus(listRow.listStatus, detailBlob + (listRow.summary || ''), hasRegisterCta);
+    let status = mergeStatus(listRow.listStatus, detailBlob + (listRow.summary || ''), hasRegisterCta);
+    if (status !== 'FULL' && isDeadlinePast(deadlineText, startDateText)) {
+      status = 'CLOSED';
+    }
 
     const loc = location;
     const hasLoc = Boolean(loc.googleMapsUrl || loc.venueName || loc.addressLine1 || loc.city);
