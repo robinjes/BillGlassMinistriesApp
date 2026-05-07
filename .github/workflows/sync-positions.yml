@@ -3,6 +3,7 @@ name: Sync position opportunities
 on:
   schedule:
     - cron: '20 6 * * *'
+    - cron: '20 18 * * *'
   workflow_dispatch:
 
 permissions:
