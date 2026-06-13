@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 # Behind the Walls Website & Mobile App
 
 **Official repository for [BehindTheWalls.com](https://www.behindthewalls.com)**  
