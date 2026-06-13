@@ -13,6 +13,7 @@ import WaysToGiveScreen from '../screens/app/WaysToGiveScreen';
 import EquippingVolunteersScreen from '../screens/app/EquippingVolunteersScreen';
 import StoreScreen from '../screens/app/StoreScreen';
 import ProfileScreen from '../screens/app/ProfileScreen';
+import PrayerRequestsScreen from '../screens/app/PrayerRequestsScreen';
 import AboutBillGlassScreen from '../screens/about/AboutBillGlassScreen';
 import AssistingTheChurchScreen from '../screens/about/AssistingTheChurchScreen';
 import StatementOfFaithScreen from '../screens/about/StatementOfFaithScreen';
@@ -96,6 +97,7 @@ export type RootStackParamList = {
   'Promo Video': undefined;
   'Equipping Volunteers': undefined;
   Store: undefined;
+  'Prayer Requests': undefined;
   Profile: undefined;
   'Open Positions Form': undefined;
   PlatformGuestForm: undefined;
@@ -121,6 +123,7 @@ export default function AppNavigator() {
     'Media',
     'Equipping Volunteers',
     'Store',
+    'Prayer Requests',
     'Profile',
   ];
   const navigationRef = useRef<NavigationContainerRef<RootStackParamList>>(null);
@@ -186,6 +189,7 @@ export default function AppNavigator() {
         <Stack.Screen name="Promo Video" component={PromoVideoScreen} />
         <Stack.Screen name="Equipping Volunteers" component={EquippingVolunteersScreen} />
         <Stack.Screen name="Store" component={StoreScreen} />
+        <Stack.Screen name="Prayer Requests" component={PrayerRequestsScreen} />
         <Stack.Screen name="Profile" component={ProfileScreen} />
         <Stack.Screen name="PlatformGuestForm" component={PlatformGuestFormScreen} />
         <Stack.Screen name="JoinLocalTeamForm" component={JoinLocalTeamFormScreen} />

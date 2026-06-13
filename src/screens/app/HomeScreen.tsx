@@ -1,10 +1,18 @@
 import React, { useRef, useState } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, TextInput, Animated } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, TextInput, Animated, Alert, Linking } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Video, ResizeMode } from 'expo-av';
 import { styles } from '../../styles/styles';
 import HomeQuickLinks from '../../components/HomeQuickLinks';
+import { RootStackParamList } from '../../navigation/AppNavigator';
+
+const CONTACT_EMAIL = 'ceoassist@behindthewalls.com';
+
+type Nav = NativeStackNavigationProp<RootStackParamList>;
 
 export default function HomeScreen() {
+  const navigation = useNavigation<Nav>();
   const imageScrollY = useRef(new Animated.Value(0)).current;
   const video = useRef(null);
   const [formData, setFormData] = useState({
@@ -22,6 +30,31 @@ export default function HomeScreen() {
       ...prev,
       [field]: value
     }));
+  };
+
+  const handleSendMessage = async () => {
+    const { firstName, lastName, phone, email, city, state, message } = formData;
+    if (!firstName.trim() || !lastName.trim() || !email.trim() || !message.trim()) {
+      Alert.alert('Missing information', 'Please enter your name, email, and message.');
+      return;
+    }
+
+    const subject = encodeURIComponent('Message from Behind the Walls app');
+    const body = encodeURIComponent(
+      `Name: ${firstName.trim()} ${lastName.trim()}\nPhone: ${phone.trim() || '—'}\nEmail: ${email.trim()}\nCity: ${city.trim() || '—'}\nState: ${state.trim() || '—'}\n\n${message.trim()}`,
+    );
+    const url = `mailto:${CONTACT_EMAIL}?subject=${subject}&body=${body}`;
+
+    try {
+      const canOpen = await Linking.canOpenURL(url);
+      if (!canOpen) {
+        Alert.alert('Unable to send', `Please email us directly at ${CONTACT_EMAIL}.`);
+        return;
+      }
+      await Linking.openURL(url);
+    } catch {
+      Alert.alert('Unable to send', `Please email us directly at ${CONTACT_EMAIL}.`);
+    }
   };
 
   return (
@@ -63,7 +96,10 @@ export default function HomeScreen() {
             We partner with local churches across the country, working under the guidance of pastors to equip their members with the tools to confidently share the Gospel through a simple, easy-to-use tract. The next day, these newly trained volunteers are taken into jails, prisons, and juvenile facilities, where they have multiple chances to share the life-changing message of Jesus Christ. After the event, many of these volunteers return home inspired and ready to make an impact in their own churches, communities, and neighborhoods. Our mission is to train, send, and win souls for Christ, one at a time!
           </Text>
 
-          <TouchableOpacity style={styles.linkButton}>
+          <TouchableOpacity
+            style={styles.linkButton}
+            onPress={() => navigation.navigate('Assisting the Church')}
+          >
             <Text style={styles.linkText}>How We Assist the Church</Text>
           </TouchableOpacity>
         </View>
@@ -128,7 +164,10 @@ export default function HomeScreen() {
         {/* Want to get involved box */}
         <View style={styles.involvedBox}>
           <Text style={styles.involvedTitle}>Want to get involved?</Text>
-          <TouchableOpacity style={styles.eventButtonRight}>
+          <TouchableOpacity
+            style={styles.eventButtonRight}
+            onPress={() => navigation.navigate('Events')}
+          >
             <Text style={styles.eventButtonText}>Event Calendar</Text>
           </TouchableOpacity>
         </View>
@@ -220,7 +259,7 @@ export default function HomeScreen() {
               />
             </View>
 
-            <TouchableOpacity style={styles.sendButton}>
+            <TouchableOpacity style={styles.sendButton} onPress={() => void handleSendMessage()}>
               <Text style={styles.sendButtonText}>SEND</Text>
             </TouchableOpacity>
           </View>

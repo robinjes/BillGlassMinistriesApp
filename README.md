@@ -1,76 +1,70 @@
-# Behind the Walls Website & Mobile App
+# Behind the Walls Mobile App
 
-**Official repository for [BehindTheWalls.com](https://www.behindthewalls.com)**  
-_A ministry-focused platform for evangelism, event registration, and outreach since 1969._
+Official mobile app for [Bill Glass Behind the Walls](https://www.behindthewalls.com) — training, sending, and winning one soul at a time since 1969.
 
----
-
-## 🌟 Overview
-
-Behind the Walls is a ministry dedicated to **Training, Sending, and Winning One Soul at a Time**. This platform (website and app) serves as the central hub for:
-
-- Promoting upcoming evangelism events
-- Registering volunteers and participants
-- Accepting online donations to support ministry outreach
-- Sharing the mission, history, and stories of impact
+The website remains the source of truth for registration and donations; this app mirrors key ministry content and loads scraped event/position data from GitHub or bundled JSON when offline.
 
 ---
 
-## 🚀 Key Features
+## Features
 
-- 🗓 **Events** – Browse and register for upcoming ministry events
-- ✍️ **Volunteer Registration** – Simple and secure sign-up
-- 🤝 **Donations** – Give online to support the mission
-- 🎥 **Media Integration** – Dynamic visuals and background content
-- 📞 **Contact** – Easily get in touch with ministry staff
-
----
-
-## 🛠 Technology Used
-
-- **Mobile Framework**: React Native  
-- **Website**: HTML5, CSS3, JavaScript  
-- **Hosting**: Vercel / Netlify / AWS  
-- **Backend Services**: API integration (custom or third-party)  
-- **Payments**: Stripe / PayPal (integrated for donations)
+- Home, About, Churches, Events, Ways to Give, Media, Equipping Volunteers, Store, Prayer Requests, Profile
+- Evangelism events with website-style sorting (by date, alphabetically, US-only, by state)
+- Africa evangelism events, registration guides, and golf challenge pages
+- Remote JSON feeds with bundled fallbacks for events and job opportunities
 
 ---
 
-## 📂 Project Overview
+## Tech stack
 
-<pre>
-behind-the-walls/
-├── assets/              # Images, videos, and multimedia files
-├── components/          # Shared React Native UI components
-├── screens/             # App screens (Home, Events, Donate, etc.)
-├── navigation/          # Navigation configuration
-├── App.js               # Main application entry point
-├── package.json         # Project metadata and dependencies
-└── README.md            # This file
-</pre>
+- **Framework:** Expo SDK 54 + React Native
+- **Language:** TypeScript
+- **Navigation:** React Navigation (native stack)
+- **Data:** Scraped JSON in `assets/` + GitHub raw URLs (see `src/config/`)
 
 ---
 
-## 📄 License
+## Project layout
 
-This project is maintained by **Behind the Walls Ministry**.  
-All rights reserved.
-
-For media usage, partnerships, or content inquiries, please contact the ministry directly through [BehindTheWalls.com](https://www.behindthewalls.com).
+```
+├── App.tsx                 # App entry
+├── app.json                # Expo config
+├── assets/                 # Images, video, scraped JSON
+├── scripts/                # Event/position scrapers, dev build helpers
+├── src/
+│   ├── components/         # Shared UI (Navbar, HomeQuickLinks)
+│   ├── config/             # Remote feed URLs, register step images
+│   ├── content/            # Static copy (e.g. registration steps)
+│   ├── navigation/         # Stack navigator
+│   ├── screens/            # Feature screens by area
+│   ├── services/           # Events & positions loading
+│   ├── styles/             # Shared StyleSheet
+│   ├── types/              # TypeScript types for scraped data
+│   └── utils/              # Shared helpers (feed picker, event status)
+└── package.json
+```
 
 ---
 
-## 🙏 Acknowledgments
+## Development
 
-- Built on decades of faith-based outreach and prison ministry  
-- Made possible by the volunteers, supporters, and leadership behind the vision  
-- Designed to expand the message and mission through modern technology
+```bash
+npm install
+npm start              # Expo Go (LAN)
+npm run start:go       # Expo Go via tunnel (hotspot / remote devices)
+npm run ios            # Native iOS dev build
+npm run android        # Native Android dev build
+npm run scrape:events  # Refresh assets/events.json from the website
+npm run scrape:positions
+npm run lint
+```
+
+GitHub Actions (`.github/workflows/`) run the scrapers on a schedule and commit updated JSON to `main`.
 
 ---
-=======
-# BillGlassMinistriesApp
-A mobile application for Bill Glass Ministries
-A Website already exists
-Just converting that website to a mobile application
-Going to use Flutter and [Backend] has to be decided
->>>>>>> d63d881b370c7ccf537b2a886f10ee5efca8d94b
+
+## License
+
+Maintained by Bill Glass Behind the Walls. All rights reserved.
+
+For media usage, partnerships, or content inquiries, contact the ministry through [behindthewalls.com](https://www.behindthewalls.com).

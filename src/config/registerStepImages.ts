@@ -53,8 +53,3 @@ export function getRegisterStepImageSlot(
   if (slot === 'top') return undefined;
   return e as ImageSourcePropType;
 }
-
-/** Backward-compatible: one image per step (non–step-4). */
-export function getRegisterStepImage(stepNumber: number): ImageSourcePropType | undefined {
-  return getRegisterStepImageSlot(stepNumber, 'single');
-}

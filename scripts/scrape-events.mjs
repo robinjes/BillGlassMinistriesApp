@@ -114,13 +114,80 @@ function slugFromEventHref(href) {
 }
 
 /**
- * All evangelism table links: a[href^="/e/"], excluding header/nav/footer.
+ * Evangelism events table on /evangelism-events — preserves website row order.
+ * Columns: Event | Event Date | Deadline | Teammates Needed | Bikers | Facility Type
  * @param {ReturnType<typeof load>} $
+ * @returns {Array<{
+ *   slug: string,
+ *   title: string,
+ *   startDateText?: string,
+ *   deadlineText?: string,
+ *   teammatesNeeded?: string,
+ *   bikers?: string,
+ *   facilityType?: string,
+ *   listOrder: number,
+ *   listStatus: EventStatus,
+ * }>}
  */
-function discoverListRows($) {
-  /** @type {Map<string, { title: string, startDateText?: string, deadlineText?: string, summary?: string, listStatus: EventStatus }>} */
-  const map = new Map();
+function discoverListFromTable($) {
+  /** @type {ReturnType<typeof discoverListFromTable>} */
+  const rows = [];
 
+  $('table').each((_, table) => {
+    const $table = $(table);
+    const headers = $table
+      .find('tr')
+      .first()
+      .find('th, td')
+      .map((__, cell) => $(cell).text().replace(/\s+/g, ' ').trim())
+      .get();
+    if (!headers.some((h) => /Teammates Needed/i.test(h))) return;
+
+    $table
+      .find('tr')
+      .slice(1)
+      .each((__, tr) => {
+        const $tr = $(tr);
+        const href = $tr.find('a[href^="/e/"]').first().attr('href');
+        const slug = slugFromEventHref(href || '');
+        if (!slug) return;
+
+        const cells = $tr
+          .find('td')
+          .map((___, td) => $(td).text().replace(/\s+/g, ' ').trim())
+          .get();
+
+        const title = cells[0] || $tr.find('a[href^="/e/"]').first().text().replace(/\s+/g, ' ').trim();
+        if (!title) return;
+
+        const startDateText = cells[1] || undefined;
+        const deadlineText = cells[2] || undefined;
+        const teammatesNeeded = cells[3] || undefined;
+        const bikers = cells[4] || undefined;
+        const facilityType = cells[5] || undefined;
+
+        rows.push({
+          slug,
+          title,
+          startDateText,
+          deadlineText,
+          teammatesNeeded,
+          bikers,
+          facilityType,
+          listOrder: rows.length,
+          listStatus: 'UNKNOWN',
+        });
+      });
+  });
+
+  return rows;
+}
+
+/** Fallback when the table markup is unavailable. */
+function discoverListRowsFallback($) {
+  /** @type {ReturnType<typeof discoverListFromTable>} */
+  const rows = [];
+  const seen = new Set();
   const excludeRoot =
     '#dmNav, #hcontainer, .dmHeaderContainer, .dmFooterContainer, nav[role="navigation"], header, footer';
 
@@ -128,31 +195,22 @@ function discoverListRows($) {
     const $a = $(el);
     if ($a.closest(excludeRoot).length) return;
 
-    const href = $a.attr('href');
-    const slug = slugFromEventHref(href || '');
-    if (!slug) return;
+    const slug = slugFromEventHref($a.attr('href') || '');
+    if (!slug || seen.has(slug)) return;
+    seen.add(slug);
 
     const title = $a.text().replace(/\s+/g, ' ').trim();
     if (!title) return;
 
-    const row = $a.closest('.dmRespRow');
-    let cols = row.find('> .dmRespColsWrapper > .dmRespCol');
-    if (cols.length < 2) {
-      cols = row.find('.dmRespCol');
-    }
-
-    const startDateText = cols.length > 1 ? $(cols[1]).text().replace(/\s+/g, ' ').trim() || undefined : undefined;
-    const deadlineText = cols.length > 2 ? $(cols[2]).text().replace(/\s+/g, ' ').trim() || undefined : undefined;
-    const summary =
-      cols.length > 3 ? $(cols[3]).text().replace(/\s+/g, ' ').trim() || undefined : undefined;
-    const listStatus = statusFromText(summary || '');
-
-    if (!map.has(slug)) {
-      map.set(slug, { title, startDateText, deadlineText, summary, listStatus });
-    }
+    rows.push({
+      slug,
+      title,
+      listOrder: rows.length,
+      listStatus: 'UNKNOWN',
+    });
   });
 
-  return map;
+  return rows;
 }
 
 /**
@@ -273,6 +331,62 @@ function extractRegisterUrlFromDetailPage($d) {
   return undefined;
 }
 
+/** @param {string} slug @param {string} detailHtml */
+function detailPageHints(slug, detailHtml) {
+  const lower = detailHtml.toLowerCase();
+  return {
+    hasRegisterPath: lower.includes(`/n/${slug.toLowerCase()}`) || /register for event/i.test(detailHtml),
+    hasSupportPath: lower.includes(`/g/${slug.toLowerCase()}`) || /support this event/i.test(detailHtml),
+    hasDirectRegisterForm: /dvforms\.net|app\.donorview\.com/i.test(detailHtml) && /register/i.test(detailHtml),
+  };
+}
+
+/**
+ * @param {string} slug
+ * @param {string | undefined} registerPathOrUrl
+ * @param {string | undefined} supportPathOrUrl
+ * @param {{ tryRegister: boolean, trySupport: boolean }} opts
+ */
+async function resolveRegistrationUrls(slug, registerPathOrUrl, supportPathOrUrl, opts) {
+  /** @type {{ registerUrl?: string, supportUrl?: string }} */
+  const out = {};
+
+  const registerIsForm =
+    registerPathOrUrl &&
+    (registerPathOrUrl.includes('dvforms.net') || registerPathOrUrl.includes('donorview'));
+  if (registerIsForm) out.registerUrl = registerPathOrUrl;
+
+  const supportIsForm =
+    supportPathOrUrl &&
+    (supportPathOrUrl.includes('dvforms.net') || supportPathOrUrl.includes('donorview'));
+  if (supportIsForm) out.supportUrl = supportPathOrUrl;
+
+  const tasks = [];
+  if (opts.tryRegister && !out.registerUrl) {
+    tasks.push(
+      fetchText(`${BASE}/n/${slug}`)
+        .then((html) => {
+          const url = extractRegisterUrl(html);
+          if (url) out.registerUrl = url;
+        })
+        .catch(() => {}),
+    );
+  }
+  if (opts.trySupport && !out.supportUrl) {
+    tasks.push(
+      fetchText(`${BASE}/g/${slug}`)
+        .then((html) => {
+          const url = extractSupportUrl(html);
+          if (url) out.supportUrl = url;
+        })
+        .catch(() => {}),
+    );
+  }
+
+  if (tasks.length) await Promise.all(tasks);
+  return out;
+}
+
 /** Detail /e/ page: support link can be /g/<slug> or donorview iframe/link. */
 /** @param {ReturnType<typeof load>} $d */
 function extractSupportUrlFromDetailPage($d) {
@@ -331,9 +445,12 @@ async function scrape() {
   console.log(`Fetching list: ${BASE}${LIST_PATH}`);
   const listHtml = await fetchText(BASE + LIST_PATH);
   const $list = load(listHtml);
-  const fromList = discoverListRows($list);
-  const slugs = [...fromList.keys()].sort();
-  console.log(`Discovered ${slugs.length} unique /e/ event slug(s) from list page (nav/footer excluded).`);
+  let listRows = discoverListFromTable($list);
+  if (!listRows.length) {
+    console.warn('Events table not found; falling back to link discovery (order may differ).');
+    listRows = discoverListRowsFallback($list);
+  }
+  console.log(`Discovered ${listRows.length} event row(s) from list page in website order.`);
 
   let africaEvangelismLines = [];
   try {
@@ -350,21 +467,22 @@ async function scrape() {
   const nowIso = new Date().toISOString();
   const events = [];
 
-  for (let i = 0; i < slugs.length; i++) {
-    const slug = slugs[i];
-    const listRow = fromList.get(slug);
-    console.log(`[${i + 1}/${slugs.length}] ${slug} — ${listRow.title}`);
+  for (let i = 0; i < listRows.length; i++) {
+    const listRow = listRows[i];
+    const { slug } = listRow;
+    console.log(`[${i + 1}/${listRows.length}] ${slug} — ${listRow.title}`);
 
     const detailUrl = `${BASE}/e/${slug}`;
+    const deadlinePast = isDeadlinePast(listRow.deadlineText, listRow.startDateText);
+    const isUsEvent = Boolean(listRow.teammatesNeeded);
+
     let detailHtml = '';
     try {
       detailHtml = await fetchText(detailUrl);
     } catch (e) {
       console.warn('  detail fetch failed:', e.message);
       let status = listRow.listStatus === 'UNKNOWN' ? 'UNKNOWN' : listRow.listStatus;
-      if (status !== 'FULL' && isDeadlinePast(listRow.deadlineText, listRow.startDateText)) {
-        status = 'CLOSED';
-      }
+      if (status !== 'FULL' && deadlinePast) status = 'CLOSED';
       events.push({
         id: slug,
         slug,
@@ -372,8 +490,11 @@ async function scrape() {
         startDateText: listRow.startDateText,
         endDateText: undefined,
         deadlineText: listRow.deadlineText,
+        listOrder: listRow.listOrder,
+        teammatesNeeded: listRow.teammatesNeeded,
+        bikers: listRow.bikers,
+        facilityType: listRow.facilityType,
         status,
-        summary: listRow.summary,
         detailUrl,
         lastScrapedAt: nowIso,
       });
@@ -394,33 +515,42 @@ async function scrape() {
     const heroImageUrl = extractHeroImage($detail);
     const detailsHtml = extractDetailsHtml(detailHtml);
 
-    let registerUrl = extractRegisterUrlFromDetailPage($detail);
-    try {
-      const nHtml = await fetchText(`${BASE}/n/${slug}`);
-      const fromN = extractRegisterUrl(nHtml);
-      if (fromN) registerUrl = fromN;
-    } catch {
-      /* ignore */
-    }
+    const registerFromDetail = extractRegisterUrlFromDetailPage($detail);
+    const supportFromDetail = extractSupportUrlFromDetailPage($detail);
+    const hints = detailPageHints(slug, detailHtml);
 
-    let supportUrl = extractSupportUrlFromDetailPage($detail);
-    try {
-      const gHtml = await fetchText(`${BASE}/g/${slug}`);
-      supportUrl = extractSupportUrl(gHtml);
-    } catch {
-      /* ignore */
-    }
+    const { registerUrl, supportUrl } = await resolveRegistrationUrls(
+      slug,
+      registerFromDetail,
+      supportFromDetail,
+      {
+        tryRegister:
+          !deadlinePast &&
+          (hints.hasRegisterPath ||
+            hints.hasDirectRegisterForm ||
+            Boolean(registerFromDetail) ||
+            isUsEvent),
+        trySupport: hints.hasSupportPath || Boolean(supportFromDetail) || isUsEvent,
+      },
+    );
 
-    if (!supportUrl) {
+    let finalSupportUrl = supportUrl;
+    if (!finalSupportUrl) {
       const iframe = $detail('#dmFirstContainer iframe[src*="donorview.com"]').first().attr('src');
       const abs = iframe ? absolutize(iframe) : undefined;
-      if (abs && !abs.includes('/19MLz')) supportUrl = abs;
+      if (abs && !abs.includes('/19MLz')) finalSupportUrl = abs;
     }
 
     const detailBlob = $detail('#dmFirstContainer').text();
     const hasRegisterCta =
-      /continue to registration|register for event/i.test(detailBlob) || Boolean(registerUrl);
-    let status = mergeStatus(listRow.listStatus, detailBlob + (listRow.summary || ''), hasRegisterCta);
+      hints.hasRegisterPath ||
+      hints.hasDirectRegisterForm ||
+      /continue to registration|register for event/i.test(detailBlob) ||
+      Boolean(registerUrl);
+    let status = mergeStatus(listRow.listStatus, detailBlob, hasRegisterCta);
+    if (registerUrl && !deadlinePast && status !== 'FULL' && status !== 'CLOSED') {
+      status = 'OPEN';
+    }
     if (status !== 'FULL' && isDeadlinePast(deadlineText, startDateText)) {
       status = 'CLOSED';
     }
@@ -435,16 +565,19 @@ async function scrape() {
       startDateText,
       endDateText: undefined,
       deadlineText,
+      listOrder: listRow.listOrder,
+      teammatesNeeded: listRow.teammatesNeeded,
+      bikers: listRow.bikers,
+      facilityType: listRow.facilityType,
       status,
-      summary: listRow.summary,
       heroImageUrl,
       detailUrl,
       location: hasLoc ? loc : undefined,
       registration:
-        registerUrl || supportUrl
+        registerUrl || finalSupportUrl
           ? {
               registerUrl,
-              supportUrl,
+              supportUrl: finalSupportUrl,
               moreInfoUrl: detailUrl,
             }
           : { moreInfoUrl: detailUrl },
@@ -452,7 +585,7 @@ async function scrape() {
       lastScrapedAt: nowIso,
     });
 
-    await new Promise((r) => setTimeout(r, 350));
+    await new Promise((r) => setTimeout(r, 120));
   }
 
   const out = {

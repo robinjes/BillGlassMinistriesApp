@@ -119,7 +119,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     textDecorationLine: 'underline',
   },
-  // ...existing code...
+  // Slideshow styles below
   slideshowContainer: {
     width: '100%',
     alignItems: 'center',

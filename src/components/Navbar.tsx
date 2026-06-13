@@ -1,7 +1,7 @@
 // src/components/Navbar.tsx
 import React, { useState, useRef } from 'react';
 import { View, Text, ScrollView, TouchableOpacity, Image, Pressable } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { styles } from '../styles/styles';
 import { useNavigation } from '@react-navigation/native';
 
@@ -165,11 +165,19 @@ export default function Navbar({ navItems, currentRoute }: { navItems: string[],
       handleWaysToGivePress();
     } else if (item === 'Media') {
       handleMediaPress();
+    } else if (item === 'Prayer Requests') {
+      setAboutDropdownVisible(false);
+      setEventsDropdownVisible(false);
+      setWaysToGiveDropdownVisible(false);
+      setWaysToGiveNowDropdownVisible(false);
+      setMediaDropdownVisible(false);
+      navigation.navigate('Prayer Requests');
     } else if (item === 'Profile') {
       setAboutDropdownVisible(false);
       setEventsDropdownVisible(false);
       setWaysToGiveDropdownVisible(false);
       setWaysToGiveNowDropdownVisible(false);
+      setMediaDropdownVisible(false);
       navigation.navigate('Profile');
     }
   };
@@ -258,12 +266,31 @@ export default function Navbar({ navItems, currentRoute }: { navItems: string[],
           decelerationRate="fast"
         >
           {navItems.map((item, index) => {
+            if (item === 'Prayer Requests') {
+              return (
+                <TouchableOpacity
+                  key={index}
+                  style={[styles.navItem, activeTab === item && styles.activeNavItem]}
+                  onPress={() => handleNavPress(item)}
+                  accessibilityRole="button"
+                  accessibilityLabel="Prayer Requests"
+                >
+                  <MaterialCommunityIcons
+                    name="hands-pray"
+                    size={24}
+                    color={activeTab === item ? '#1e3a5f' : '#fff'}
+                  />
+                </TouchableOpacity>
+              );
+            }
             if (item === 'Profile') {
               return (
                 <TouchableOpacity
                   key={index}
                   style={[styles.navItem, activeTab === item && styles.activeNavItem]}
                   onPress={() => handleNavPress(item)}
+                  accessibilityRole="button"
+                  accessibilityLabel="Sign In"
                 >
                   <Ionicons 
                     name="person" 

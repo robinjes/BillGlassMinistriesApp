@@ -1,5 +1,6 @@
 import type { PositionOpportunity, PositionsResponse } from '../types/positions';
 import { POSITIONS_JSON_RAW_URL } from '../config/positionsConfig';
+import { pickScrapedFeed } from '../utils/feedPicker';
 import bundledPositions from '../../assets/positions.json';
 
 function isPositionsResponse(data: unknown): data is PositionsResponse {
@@ -18,26 +19,40 @@ function normalizeResponse(data: unknown): PositionsResponse | null {
   return null;
 }
 
+function pickPositionsResponse(
+  remote: PositionsResponse | null,
+  bundled: PositionsResponse | null,
+): PositionsResponse | null {
+  const picked = pickScrapedFeed(
+    remote ? { updatedAt: remote.updatedAt, items: remote.positions } : null,
+    bundled ? { updatedAt: bundled.updatedAt, items: bundled.positions } : null,
+  );
+  if (!picked) return null;
+  const source = bundled && picked.items === bundled.positions ? bundled : remote!;
+  return { ...source, positions: picked.items };
+}
+
 /**
- * Loads position opportunities: tries GitHub raw JSON first,
- * then bundled `assets/positions.json`.
+ * Loads position opportunities: compares GitHub raw JSON with bundled `assets/positions.json`.
  */
 export async function fetchPositionsResponse(): Promise<PositionsResponse> {
+  const bundled = normalizeResponse(bundledPositions as unknown);
+  let remote: PositionsResponse | null = null;
+
   try {
     const res = await fetch(`${POSITIONS_JSON_RAW_URL}?t=${Date.now()}`, {
       headers: { Accept: 'application/json' },
     });
     if (res.ok) {
       const json: unknown = await res.json();
-      const parsed = normalizeResponse(json);
-      if (parsed) return parsed;
+      remote = normalizeResponse(json);
     }
   } catch {
     // fall through to bundled
   }
 
-  const parsed = normalizeResponse(bundledPositions as unknown);
-  if (parsed) return parsed;
+  const picked = pickPositionsResponse(remote, bundled);
+  if (picked) return picked;
 
   return {
     source: 'behindthewalls.com',

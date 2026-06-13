@@ -13,6 +13,58 @@ import { styles as mainStyles } from '../../styles/styles';
 import { RootStackParamList } from '../../navigation/AppNavigator';
 import { fetchEventsResponse } from '../../services/eventsService';
 import type { Event, EventStatus } from '../../types/events';
+import { eventStatusColor, eventStatusLabel } from '../../utils/eventStatus';
+
+const US_STATES = [
+  { code: 'AL', name: 'Alabama' },
+  { code: 'CA', name: 'California' },
+  { code: 'CO', name: 'Colorado' },
+  { code: 'FL', name: 'Florida' },
+  { code: 'GA', name: 'Georgia' },
+  { code: 'IN', name: 'Indiana' },
+  { code: 'LA', name: 'Louisiana' },
+  { code: 'MI', name: 'Michigan' },
+  { code: 'MO', name: 'Missouri' },
+  { code: 'OH', name: 'Ohio' },
+  { code: 'OK', name: 'Oklahoma' },
+  { code: 'SC', name: 'South Carolina' },
+  { code: 'TX', name: 'Texas' },
+  { code: 'WI', name: 'Wisconsin' },
+] as const;
+
+const isAfricaEvent = (event: Event) => /Africa DOC/i.test(event.title);
+
+const getEventStateCodes = (event: Event): string[] => {
+  const codes = new Set<string>();
+  const title = event.title;
+
+  for (const match of title.matchAll(/,\s*([A-Z]{2})(?:\s|$|-)/g)) {
+    codes.add(match[1]);
+  }
+
+  const multiState = title.match(/\b([A-Z]{2})-([A-Z]{2})\b/);
+  if (multiState) {
+    codes.add(multiState[1]);
+    codes.add(multiState[2]);
+  }
+
+  if (/Ohio/i.test(title)) codes.add('OH');
+  if (/\bFL\b|Florida/i.test(title)) codes.add('FL');
+  if (
+    /Dallas-Fort Worth|DFW|\bTX\b|Beaumont|Burnet|Henderson, TX|Houston|Huntsville, TX|New Boston|Richmond, TX/i.test(
+      title,
+    )
+  ) {
+    codes.add('TX');
+  }
+  if (/Oklahoma City/i.test(title)) codes.add('OK');
+
+  if (event.location?.state) {
+    codes.add(event.location.state.toUpperCase());
+  }
+
+  return [...codes];
+};
 
 const parseDate = (dateString: string): Date | null => {
   if (!dateString) return null;
@@ -39,18 +91,8 @@ const parseDate = (dateString: string): Date | null => {
     cleaned = cleaned.replace(new RegExp(`^${abbr}\\s`, 'i'), `${full} `);
   }
   const months = [
-    'january',
-    'february',
-    'march',
-    'april',
-    'may',
-    'june',
-    'july',
-    'august',
-    'september',
-    'october',
-    'november',
-    'december',
+    'january', 'february', 'march', 'april', 'may', 'june',
+    'july', 'august', 'september', 'october', 'november', 'december',
   ];
   const match = cleaned.match(/^(\w+)\s+(\d+)(?:,\s*(\d{4}))?/i);
   if (match) {
@@ -62,15 +104,35 @@ const parseDate = (dateString: string): Date | null => {
       return new Date(year, monthIndex, day);
     }
   }
+  const rangeMatch = dateString.match(/^(\w+)\s+(\d+)-(\d+)/i);
+  if (rangeMatch) {
+    const monthIndex = months.findIndex((m) => m.startsWith(rangeMatch[1].toLowerCase()));
+    const day = parseInt(rangeMatch[2], 10);
+    if (monthIndex !== -1) return new Date(new Date().getFullYear(), monthIndex, day);
+  }
   return null;
 };
+
+type OrderMode = 'allByDate' | 'alphabetical' | 'usByDate' | 'byState';
+
+function EventListLine({ label, value }: { label: string; value?: string | null }) {
+  if (!value) return null;
+  return (
+    <Text style={localStyles.eventLine}>
+      <Text style={localStyles.eventLineLabel}>{label}: </Text>
+      {value}
+    </Text>
+  );
+}
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
 export default function EvangelismEventsScreen() {
   const navigation = useNavigation<NavigationProp>();
   const [filter, setFilter] = useState<'all' | EventStatus>('all');
-  const [sortBy, setSortBy] = useState<'date' | 'title'>('date');
+  const [orderMode, setOrderMode] = useState<OrderMode>('usByDate');
+  const [selectedState, setSelectedState] = useState<string | null>(null);
+  const [isStateDropdownOpen, setIsStateDropdownOpen] = useState(false);
   const [events, setEvents] = useState<Event[]>([]);
   const [feedUpdated, setFeedUpdated] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -92,42 +154,38 @@ export default function EvangelismEventsScreen() {
   }, []);
 
   const filteredEvents = useMemo(() => {
-    const list = events.filter((e) => (filter === 'all' ? true : e.status === filter));
-    return list.sort((a, b) => {
-      if (sortBy === 'title') {
+    let list = events.filter((e) => filter === 'all' || e.status === filter);
+
+    if (orderMode === 'usByDate' || orderMode === 'byState') {
+      list = list.filter((e) => !isAfricaEvent(e));
+    }
+
+    if (orderMode === 'byState' && selectedState) {
+      list = list.filter((e) => getEventStateCodes(e).includes(selectedState));
+    }
+
+    list = [...list].sort((a, b) => {
+      if (orderMode === 'alphabetical') {
         return a.title.localeCompare(b.title);
       }
-      const da = parseDate(a.startDateText || '') || new Date(0);
-      const db = parseDate(b.startDateText || '') || new Date(0);
-      return da.getTime() - db.getTime();
+      if (orderMode === 'allByDate') {
+        const byOrder = (a.listOrder ?? Number.MAX_SAFE_INTEGER) - (b.listOrder ?? Number.MAX_SAFE_INTEGER);
+        if (a.listOrder != null && b.listOrder != null) return byOrder;
+        const da = parseDate(a.startDateText || '') || new Date(0);
+        const db = parseDate(b.startDateText || '') || new Date(0);
+        return da.getTime() - db.getTime();
+      }
+      return (a.listOrder ?? Number.MAX_SAFE_INTEGER) - (b.listOrder ?? Number.MAX_SAFE_INTEGER);
     });
-  }, [events, filter, sortBy]);
 
-  const getStatusColor = (status: EventStatus) => {
-    switch (status) {
-      case 'OPEN':
-        return '#4CAF50';
-      case 'CLOSED':
-        return '#F44336';
-      case 'FULL':
-        return '#FF9800';
-      default:
-        return '#757575';
-    }
-  };
+    return list;
+  }, [events, filter, orderMode, selectedState]);
 
-  const getStatusText = (status: EventStatus) => {
-    switch (status) {
-      case 'OPEN':
-        return 'Open';
-      case 'CLOSED':
-        return 'Closed';
-      case 'FULL':
-        return 'Full';
-      default:
-        return 'Unknown';
-    }
-  };
+  const selectedStateName =
+    US_STATES.find((state) => state.code === selectedState)?.name ?? null;
+
+  const getStatusColor = eventStatusColor;
+  const getStatusText = eventStatusLabel;
 
   const styles = { ...mainStyles, ...localStyles };
 
@@ -186,48 +244,146 @@ export default function EvangelismEventsScreen() {
 
           <View style={localStyles.filterRow}>
             <Text style={localStyles.filterLabel}>Order:</Text>
-            <View style={localStyles.filterButtons}>
-              <TouchableOpacity
-                style={[
-                  localStyles.filterButton,
-                  localStyles.sortOrderButton,
-                  sortBy === 'date' && localStyles.filterButtonActive,
-                ]}
-                onPress={() => setSortBy('date')}
-              >
-                <Text
+            <View style={localStyles.orderControls}>
+              <View style={localStyles.orderControlsTopRow}>
+                <TouchableOpacity
                   style={[
-                    localStyles.filterButtonText,
-                    localStyles.sortOrderButtonText,
-                    sortBy === 'date' && localStyles.filterButtonTextActive,
+                    localStyles.orderControl,
+                    orderMode === 'allByDate' && localStyles.orderControlActive,
                   ]}
+                  onPress={() => {
+                    setOrderMode('allByDate');
+                    setSelectedState(null);
+                    setIsStateDropdownOpen(false);
+                  }}
                 >
-                  Events by Date
-                </Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={[
-                  localStyles.filterButton,
-                  localStyles.sortOrderButton,
-                  sortBy === 'title' && localStyles.filterButtonActive,
-                ]}
-                onPress={() => setSortBy('title')}
-              >
-                <Text
+                  <Text
+                    style={[
+                      localStyles.orderControlText,
+                      orderMode === 'allByDate' && localStyles.orderControlTextActive,
+                    ]}
+                  >
+                    Events by Date
+                  </Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
                   style={[
-                    localStyles.filterButtonText,
-                    localStyles.sortOrderButtonText,
-                    sortBy === 'title' && localStyles.filterButtonTextActive,
+                    localStyles.orderControl,
+                    orderMode === 'alphabetical' && localStyles.orderControlActive,
                   ]}
+                  onPress={() => {
+                    setOrderMode('alphabetical');
+                    setSelectedState(null);
+                    setIsStateDropdownOpen(false);
+                  }}
                 >
-                  Events Alphabetically
-                </Text>
-              </TouchableOpacity>
+                  <Text
+                    style={[
+                      localStyles.orderControlText,
+                      orderMode === 'alphabetical' && localStyles.orderControlTextActive,
+                    ]}
+                  >
+                    Events Alphabetically
+                  </Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  style={[
+                    localStyles.orderControl,
+                    orderMode === 'usByDate' && localStyles.orderControlActive,
+                  ]}
+                  onPress={() => {
+                    setOrderMode('usByDate');
+                    setSelectedState(null);
+                    setIsStateDropdownOpen(false);
+                  }}
+                >
+                  <Text
+                    style={[
+                      localStyles.orderControlText,
+                      orderMode === 'usByDate' && localStyles.orderControlTextActive,
+                    ]}
+                  >
+                    US Events by Date
+                  </Text>
+                </TouchableOpacity>
+              </View>
+
+              <View style={localStyles.stateDropdownWrap}>
+                <TouchableOpacity
+                  style={[
+                    localStyles.orderControl,
+                    localStyles.stateDropdownTrigger,
+                    orderMode === 'byState' && localStyles.orderControlActive,
+                  ]}
+                  onPress={() => {
+                    setOrderMode('byState');
+                    setIsStateDropdownOpen((open) => !open);
+                  }}
+                >
+                  <Text
+                    style={[
+                      localStyles.orderControlText,
+                      localStyles.stateDropdownLabel,
+                      orderMode === 'byState' && localStyles.orderControlTextActive,
+                    ]}
+                  >
+                    {selectedStateName ?? 'Choose a State'}
+                  </Text>
+                  <View style={localStyles.stateDropdownChevron}>
+                    <Text style={localStyles.stateDropdownChevronText}>
+                      {isStateDropdownOpen ? '▲' : '▼'}
+                    </Text>
+                  </View>
+                </TouchableOpacity>
+
+                {isStateDropdownOpen ? (
+                  <ScrollView style={localStyles.stateDropdownList} nestedScrollEnabled>
+                    <TouchableOpacity
+                      style={localStyles.stateDropdownItem}
+                      onPress={() => {
+                        setSelectedState(null);
+                        setOrderMode('byState');
+                        setIsStateDropdownOpen(false);
+                      }}
+                    >
+                      <Text style={localStyles.stateDropdownItemText}>All states</Text>
+                    </TouchableOpacity>
+                    {US_STATES.map((state) => (
+                      <TouchableOpacity
+                        key={state.code}
+                        style={[
+                          localStyles.stateDropdownItem,
+                          selectedState === state.code && localStyles.stateDropdownItemActive,
+                        ]}
+                        onPress={() => {
+                          setSelectedState(state.code);
+                          setOrderMode('byState');
+                          setIsStateDropdownOpen(false);
+                        }}
+                      >
+                        <Text
+                          style={[
+                            localStyles.stateDropdownItemText,
+                            selectedState === state.code && localStyles.stateDropdownItemTextActive,
+                          ]}
+                        >
+                          {state.name}
+                        </Text>
+                      </TouchableOpacity>
+                    ))}
+                  </ScrollView>
+                ) : null}
+              </View>
             </View>
           </View>
         </View>
 
         <View style={localStyles.eventsList}>
+          {filteredEvents.length === 0 ? (
+            <Text style={localStyles.emptyListText}>No events match the current filters.</Text>
+          ) : null}
           {filteredEvents.map((event) => (
             <TouchableOpacity
               key={event.id}
@@ -241,20 +397,21 @@ export default function EvangelismEventsScreen() {
                 </View>
               </View>
               {event.startDateText ? (
-                <Text style={localStyles.eventDate}>Event date: {event.startDateText}</Text>
+                <EventListLine label="Event date" value={event.startDateText} />
               ) : null}
               {event.deadlineText ? (
-                <Text style={localStyles.eventDeadline}>Registration deadline: {event.deadlineText}</Text>
+                <EventListLine label="Registration deadline" value={event.deadlineText} />
               ) : null}
               {event.location?.city ? (
-                <Text style={localStyles.eventLocation}>Location: {event.location.city}</Text>
+                <EventListLine label="Location" value={event.location.city} />
               ) : event.location?.venueName ? (
-                <Text style={localStyles.eventLocation}>Venue: {event.location.venueName}</Text>
+                <EventListLine label="Venue" value={event.location.venueName} />
               ) : null}
-              {event.summary ? (
-                <Text style={localStyles.eventDescription} numberOfLines={3}>
-                  {event.summary}
-                </Text>
+              <EventListLine label="Teammates Needed" value={event.teammatesNeeded} />
+              <EventListLine label="Bikers" value={event.bikers} />
+              <EventListLine label="Facility Type" value={event.facilityType} />
+              {event.status === 'OPEN' && event.registration?.registerUrl ? (
+                <Text style={localStyles.eventRegisterHint}>Registration is open — tap for details to sign up</Text>
               ) : null}
             </TouchableOpacity>
           ))}
@@ -287,7 +444,7 @@ const localStyles = StyleSheet.create({
   },
   filterRow: {
     flexDirection: 'row',
-    alignItems: 'center',
+    alignItems: 'flex-start',
     marginBottom: 15,
     flexWrap: 'wrap',
   },
@@ -326,18 +483,115 @@ const localStyles = StyleSheet.create({
     color: '#fff',
     fontWeight: '600',
   },
-  sortOrderButton: {
-    paddingHorizontal: 14,
+  orderControls: {
+    flex: 1,
     minWidth: 0,
-    flexGrow: 1,
-    flexBasis: '45%',
+    gap: 6,
   },
-  sortOrderButtonText: {
-    fontSize: 12,
+  orderControlsTopRow: {
+    flexDirection: 'row',
+    gap: 4,
+  },
+  orderControl: {
+    flex: 1,
+    minWidth: 0,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#e9ecef',
+    borderRadius: 4,
+    paddingHorizontal: 6,
+    paddingVertical: 10,
+    minHeight: 44,
+    borderWidth: 1,
+    borderColor: '#dee2e6',
+  },
+  orderControlActive: {
+    backgroundColor: '#1e3a5f',
+    borderColor: '#1e3a5f',
+  },
+  orderControlText: {
+    fontSize: 10,
+    fontWeight: '700',
+    color: '#1e3a5f',
     textAlign: 'center',
+  },
+  orderControlTextActive: {
+    color: '#fff',
+  },
+  stateDropdownWrap: {
+    width: '100%',
+    position: 'relative',
+    zIndex: 10,
+  },
+  stateDropdownTrigger: {
+    width: '100%',
+    justifyContent: 'space-between',
+    paddingHorizontal: 14,
+  },
+  stateDropdownLabel: {
+    flex: 1,
+    flexShrink: 1,
+    textAlign: 'left',
+    fontSize: 13,
+    paddingRight: 8,
+  },
+  stateDropdownChevron: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    backgroundColor: '#1e3a5f',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginLeft: 8,
+  },
+  stateDropdownChevronText: {
+    color: '#fff',
+    fontSize: 10,
+    fontWeight: '700',
+  },
+  stateDropdownList: {
+    position: 'absolute',
+    top: '100%',
+    left: 0,
+    right: 0,
+    marginTop: 4,
+    maxHeight: 220,
+    backgroundColor: '#fff',
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#dee2e6',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.12,
+    shadowRadius: 4,
+    elevation: 4,
+  },
+  stateDropdownItem: {
+    paddingVertical: 12,
+    paddingHorizontal: 14,
+    borderBottomWidth: 1,
+    borderBottomColor: '#f0f0f0',
+  },
+  stateDropdownItemActive: {
+    backgroundColor: '#f8f9fa',
+  },
+  stateDropdownItemText: {
+    fontSize: 14,
+    color: '#1e3a5f',
+    fontWeight: '500',
+  },
+  stateDropdownItemTextActive: {
+    fontWeight: '700',
   },
   eventsList: {
     marginBottom: 20,
+  },
+  emptyListText: {
+    fontSize: 15,
+    color: '#6c757d',
+    textAlign: 'center',
+    paddingVertical: 24,
   },
   eventCard: {
     backgroundColor: '#fff',
@@ -375,23 +629,21 @@ const localStyles = StyleSheet.create({
     fontSize: 12,
     fontWeight: 'bold',
   },
-  eventDate: {
+  eventLine: {
     fontSize: 14,
     color: '#495057',
     marginBottom: 4,
-    fontWeight: '500',
+    lineHeight: 20,
   },
-  eventDeadline: {
-    fontSize: 14,
-    color: '#495057',
-    marginBottom: 4,
-    fontWeight: '500',
+  eventLineLabel: {
+    fontWeight: '700',
+    color: '#1e3a5f',
   },
-  eventLocation: {
-    fontSize: 14,
-    color: '#495057',
-    marginBottom: 4,
-    fontWeight: '500',
+  eventRegisterHint: {
+    fontSize: 13,
+    color: '#4CAF50',
+    fontWeight: '600',
+    marginTop: 8,
   },
   eventDescription: {
     fontSize: 14,

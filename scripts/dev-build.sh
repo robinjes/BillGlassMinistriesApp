@@ -50,7 +50,7 @@ if [ $? -eq 0 ]; then
     echo "✅ Build successful! Starting simulator..."
     # Open the app in simulator
     xcrun simctl install booted build/Build/Products/Debug-iphonesimulator/BehindtheWalls.app
-    xcrun simctl launch booted com.billglassministries.behindthewalls
+    xcrun simctl launch booted com.billglass.behindthewalls
     echo "🎉 App launched successfully!"
 else
     echo "❌ Build failed!"

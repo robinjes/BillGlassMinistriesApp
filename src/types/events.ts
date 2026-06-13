@@ -25,6 +25,11 @@ export interface Event {
   endDateText?: string;
   deadlineText?: string;
   status: EventStatus;
+  /** Row order on behindthewalls.com/evangelism-events (0-based). */
+  listOrder?: number;
+  teammatesNeeded?: string;
+  bikers?: string;
+  facilityType?: string;
   summary?: string;
   heroImageUrl?: string;
   detailUrl: string;

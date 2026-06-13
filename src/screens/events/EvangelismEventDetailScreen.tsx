@@ -16,36 +16,11 @@ import { WebView } from 'react-native-webview';
 import { styles as mainStyles } from '../../styles/styles';
 import { RootStackParamList } from '../../navigation/AppNavigator';
 import { fetchEventById } from '../../services/eventsService';
-import type { Event, EventStatus } from '../../types/events';
+import type { Event } from '../../types/events';
+import { eventStatusColor, eventStatusLabel } from '../../utils/eventStatus';
 
 type Nav = NativeStackNavigationProp<RootStackParamList>;
 type R = RouteProp<RootStackParamList, 'Evangelism Event Detail'>;
-
-function statusLabel(s: EventStatus): string {
-  switch (s) {
-    case 'OPEN':
-      return 'Open';
-    case 'FULL':
-      return 'Full';
-    case 'CLOSED':
-      return 'Closed';
-    default:
-      return 'Unknown';
-  }
-}
-
-function statusColor(s: EventStatus): string {
-  switch (s) {
-    case 'OPEN':
-      return '#4CAF50';
-    case 'FULL':
-      return '#FF9800';
-    case 'CLOSED':
-      return '#F44336';
-    default:
-      return '#757575';
-  }
-}
 
 function wrapDetailsHtml(fragment: string): string {
   return `<!DOCTYPE html>
@@ -120,8 +95,8 @@ export default function EvangelismEventDetailScreen() {
 
         <Text style={styles.title}>{event.title}</Text>
         <View style={styles.row}>
-          <View style={[styles.badge, { backgroundColor: statusColor(event.status) }]}>
-            <Text style={styles.badgeText}>{statusLabel(event.status)}</Text>
+          <View style={[styles.badge, { backgroundColor: eventStatusColor(event.status) }]}>
+            <Text style={styles.badgeText}>{eventStatusLabel(event.status)}</Text>
           </View>
         </View>
 
@@ -137,6 +112,30 @@ export default function EvangelismEventDetailScreen() {
             <Text style={styles.metaLabel}>Registration deadline: </Text>
             {event.deadlineText}
           </Text>
+        ) : null}
+
+        {event.teammatesNeeded || event.bikers || event.facilityType ? (
+          <View style={styles.infoBox}>
+            <Text style={styles.sectionTitle}>Event listing</Text>
+            {event.teammatesNeeded ? (
+              <Text style={styles.meta}>
+                <Text style={styles.metaLabel}>Teammates Needed: </Text>
+                {event.teammatesNeeded}
+              </Text>
+            ) : null}
+            {event.bikers ? (
+              <Text style={styles.meta}>
+                <Text style={styles.metaLabel}>Bikers: </Text>
+                {event.bikers}
+              </Text>
+            ) : null}
+            {event.facilityType ? (
+              <Text style={styles.meta}>
+                <Text style={styles.metaLabel}>Facility Type: </Text>
+                {event.facilityType}
+              </Text>
+            ) : null}
+          </View>
         ) : null}
 
         {loc ? (
@@ -167,7 +166,7 @@ export default function EvangelismEventDetailScreen() {
         ) : null}
 
         <View style={styles.actions}>
-          {reg?.registerUrl ? (
+          {reg?.registerUrl && event.status === 'OPEN' ? (
             <>
               <TouchableOpacity style={styles.primaryBtn} onPress={() => openOrWeb(reg.registerUrl!, 'Register')}>
                 <Text style={styles.primaryBtnText}>Register</Text>
@@ -233,6 +232,7 @@ const styles = StyleSheet.create({
   },
   body: { fontSize: 15, color: '#495057', lineHeight: 22 },
   locBox: { marginBottom: 12, padding: 12, backgroundColor: '#f8f9fa', borderRadius: 8 },
+  infoBox: { marginBottom: 12, padding: 12, backgroundColor: '#f8f9fa', borderRadius: 8 },
   summaryBox: { marginBottom: 16 },
   link: { fontSize: 15, color: '#2c5282', textDecorationLine: 'underline', marginTop: 6 },
   actions: { marginBottom: 20, gap: 10 },

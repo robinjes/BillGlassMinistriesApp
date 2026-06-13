@@ -103,6 +103,8 @@ export default function AfricaEvangelismEventsScreen() {
           <View style={localStyles.listLoading}>
             <ActivityIndicator color={LIST_COLOR} />
           </View>
+        ) : africaLines.length === 0 ? (
+          <Text style={localStyles.emptyListText}>No Africa events are listed right now. Check back soon.</Text>
         ) : (
           <View style={localStyles.listBlock}>
             {africaLines.map((line, i) => (
@@ -202,6 +204,14 @@ const localStyles = StyleSheet.create({
     paddingVertical: 16,
     alignSelf: 'stretch',
     alignItems: 'center',
+  },
+  emptyListText: {
+    color: LIST_COLOR,
+    fontSize: 16,
+    lineHeight: 24,
+    textAlign: 'center',
+    paddingVertical: 16,
+    alignSelf: 'stretch',
   },
   listBlock: {
     alignSelf: 'stretch',
